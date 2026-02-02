@@ -137,13 +137,12 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Donation": {
+		"on_submit": "techniti.api.update_stats_on_donation",
+		"on_cancel": "techniti.api.update_stats_on_donation"
+	}
+}
 
 # Scheduled Tasks
 # ---------------
@@ -207,26 +206,20 @@ app_license = "mit"
 # User Data Protection
 # --------------------
 
-# user_data_fields = [
-# 	{
-# 		"doctype": "{doctype_1}",
-# 		"filter_by": "{filter_by}",
-# 		"redact_fields": ["{field_1}", "{field_2}"],
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_2}",
-# 		"filter_by": "{filter_by}",
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_3}",
-# 		"strict": False,
-# 	},
-# 	{
-# 		"doctype": "{doctype_4}"
-# 	}
-# ]
+user_data_fields = [
+	{
+		"doctype": "Donor",
+		"filter_by": "email",
+		"redact_fields": ["full_name", "mobile", "pan_number", "address"],
+		"partial": 1,
+	},
+	{
+		"doctype": "Donation",
+		"filter_by": "donor_email",
+		"redact_fields": ["donor_name", "donor_mobile", "message"],
+		"partial": 1,
+	}
+]
 
 # Authentication and authorization
 # --------------------------------
@@ -242,3 +235,11 @@ app_license = "mit"
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 
+# Website Route Rules
+website_route_rules = [
+	{"from_route": "/donate", "to_route": "donate"},
+	{"from_route": "/donation-success", "to_route": "donation-success"},
+]
+
+# Webhook endpoint for Razorpay
+# The webhook URL will be: https://yoursite.com/api/method/techniti.api.razorpay_webhook

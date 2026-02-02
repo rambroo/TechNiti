@@ -1,0 +1,200 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2024-01-17 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "donor",
+  "donor_name",
+  "donor_email",
+  "donor_mobile",
+  "column_break_1",
+  "campaign",
+  "amount",
+  "currency",
+  "donation_date",
+  "section_break_payment",
+  "payment_status",
+  "payment_method",
+  "column_break_2",
+  "razorpay_payment_id",
+  "razorpay_order_id",
+  "razorpay_signature",
+  "section_break_additional",
+  "message",
+  "is_anonymous",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "DON-.YYYY.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "donor",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Donor",
+   "options": "Donor"
+  },
+  {
+   "fetch_from": "donor.full_name",
+   "fieldname": "donor_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Donor Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "donor.email",
+   "fieldname": "donor_email",
+   "fieldtype": "Data",
+   "label": "Donor Email",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "donor.mobile",
+   "fieldname": "donor_mobile",
+   "fieldtype": "Data",
+   "label": "Donor Mobile",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Campaign",
+   "options": "Donation Campaign"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "default": "INR"
+  },
+  {
+   "fieldname": "donation_date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Donation Date",
+   "default": "Now"
+  },
+  {
+   "fieldname": "section_break_payment",
+   "fieldtype": "Section Break",
+   "label": "Payment Details"
+  },
+  {
+   "fieldname": "payment_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Payment Status",
+   "options": "Pending\nPaid\nFailed\nRefunded",
+   "default": "Pending"
+  },
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Data",
+   "label": "Payment Method",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "razorpay_payment_id",
+   "fieldtype": "Data",
+   "label": "Razorpay Payment ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "razorpay_order_id",
+   "fieldtype": "Data",
+   "label": "Razorpay Order ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "razorpay_signature",
+   "fieldtype": "Data",
+   "label": "Razorpay Signature",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "section_break_additional",
+   "fieldtype": "Section Break",
+   "label": "Additional Information"
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Small Text",
+   "label": "Message from Donor"
+  },
+  {
+   "fieldname": "is_anonymous",
+   "fieldtype": "Check",
+   "label": "Anonymous Donation"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Donation",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-01-17 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Techniti",
+ "name": "Donation",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "cancel": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "donor_name",
+ "track_changes": 1
+}

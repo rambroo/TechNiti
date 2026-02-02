@@ -1,0 +1,750 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{% if success %}Thank You!{% else %}Donation Status{% endif %} - TechNiti{% endblock %}
+
+{% block head_include %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+	* {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+
+	:root {
+		--primary: #7c3aed;
+		--primary-dark: #6d28d9;
+		--secondary: #ec4899;
+		--success: #10b981;
+		--success-light: #d1fae5;
+		--error: #ef4444;
+		--error-light: #fef2f2;
+		--gray-50: #f9fafb;
+		--gray-100: #f3f4f6;
+		--gray-200: #e5e7eb;
+		--gray-300: #d1d5db;
+		--gray-400: #9ca3af;
+		--gray-500: #6b7280;
+		--gray-600: #4b5563;
+		--gray-700: #374151;
+		--gray-800: #1f2937;
+		--gray-900: #111827;
+	}
+
+	body {
+		font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+	}
+
+	.success-page {
+		min-height: 100vh;
+		background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 40px 20px;
+		position: relative;
+		overflow: hidden;
+	}
+
+	/* Animated background circles */
+	.bg-decoration {
+		position: absolute;
+		border-radius: 50%;
+		background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(236, 72, 153, 0.2));
+		animation: float 15s infinite ease-in-out;
+	}
+
+	.bg-decoration:nth-child(1) {
+		width: 500px;
+		height: 500px;
+		top: -200px;
+		right: -200px;
+	}
+
+	.bg-decoration:nth-child(2) {
+		width: 400px;
+		height: 400px;
+		bottom: -150px;
+		left: -150px;
+		animation-delay: -5s;
+	}
+
+	.bg-decoration:nth-child(3) {
+		width: 200px;
+		height: 200px;
+		top: 50%;
+		left: 10%;
+		animation-delay: -10s;
+	}
+
+	@keyframes float {
+		0%, 100% { transform: translate(0, 0) scale(1); }
+		33% { transform: translate(30px, -30px) scale(1.05); }
+		66% { transform: translate(-20px, 20px) scale(0.95); }
+	}
+
+	/* Confetti canvas */
+	#confetti-canvas {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		z-index: 100;
+	}
+
+	.success-container {
+		position: relative;
+		z-index: 10;
+		width: 100%;
+		max-width: 500px;
+	}
+
+	.success-card {
+		background: white;
+		border-radius: 24px;
+		box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+		overflow: hidden;
+		animation: slideUp 0.6s ease-out;
+	}
+
+	@keyframes slideUp {
+		from {
+			opacity: 0;
+			transform: translateY(40px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* Success Header */
+	.success-header {
+		padding: 48px 32px 32px;
+		text-align: center;
+		background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.1));
+		position: relative;
+	}
+
+	.success-header::before {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, var(--success), transparent);
+	}
+
+	.success-icon-wrapper {
+		position: relative;
+		width: 100px;
+		height: 100px;
+		margin: 0 auto 24px;
+	}
+
+	.success-icon-bg {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(135deg, var(--success), #059669);
+		border-radius: 50%;
+		animation: successPulse 2s ease-in-out infinite;
+	}
+
+	@keyframes successPulse {
+		0%, 100% {
+			box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+		}
+		50% {
+			box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+		}
+	}
+
+	.success-icon {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.success-icon svg {
+		width: 50px;
+		height: 50px;
+		color: white;
+	}
+
+	.success-icon svg polyline {
+		stroke-dasharray: 50;
+		stroke-dashoffset: 50;
+		animation: checkDraw 0.6s ease-out 0.3s forwards;
+	}
+
+	@keyframes checkDraw {
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	.success-title {
+		font-size: 2rem;
+		font-weight: 800;
+		color: var(--gray-900);
+		margin-bottom: 8px;
+		animation: fadeIn 0.5s ease 0.4s both;
+	}
+
+	.success-subtitle {
+		font-size: 1rem;
+		color: var(--gray-600);
+		line-height: 1.6;
+		max-width: 350px;
+		margin: 0 auto;
+		animation: fadeIn 0.5s ease 0.5s both;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(10px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	/* Donation Details */
+	.donation-details {
+		padding: 32px;
+	}
+
+	.detail-card {
+		background: var(--gray-50);
+		border-radius: 16px;
+		padding: 24px;
+		margin-bottom: 24px;
+	}
+
+	.detail-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 12px 0;
+	}
+
+	.detail-row:not(:last-child) {
+		border-bottom: 1px solid var(--gray-200);
+	}
+
+	.detail-label {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 0.9rem;
+		color: var(--gray-500);
+	}
+
+	.detail-label svg {
+		width: 18px;
+		height: 18px;
+		color: var(--gray-400);
+	}
+
+	.detail-value {
+		font-weight: 600;
+		color: var(--gray-900);
+		font-size: 0.95rem;
+	}
+
+	.detail-row.amount .detail-value {
+		font-size: 1.5rem;
+		font-weight: 800;
+		background: linear-gradient(135deg, var(--primary), var(--secondary));
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+
+	/* Actions */
+	.success-actions {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		padding: 16px 24px;
+		border-radius: 12px;
+		font-size: 1rem;
+		font-weight: 600;
+		text-decoration: none;
+		transition: all 0.3s ease;
+		cursor: pointer;
+		border: none;
+	}
+
+	.btn-primary {
+		background: linear-gradient(135deg, var(--primary), var(--secondary));
+		color: white;
+	}
+
+	.btn-primary:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+		color: white;
+		text-decoration: none;
+	}
+
+	.btn-secondary {
+		background: var(--gray-100);
+		color: var(--gray-700);
+	}
+
+	.btn-secondary:hover {
+		background: var(--gray-200);
+		color: var(--gray-800);
+		text-decoration: none;
+	}
+
+	.btn svg {
+		width: 20px;
+		height: 20px;
+	}
+
+	/* Share Section */
+	.share-section {
+		padding: 24px 32px 32px;
+		border-top: 1px solid var(--gray-100);
+		text-align: center;
+	}
+
+	.share-title {
+		font-size: 0.9rem;
+		color: var(--gray-500);
+		margin-bottom: 16px;
+	}
+
+	.share-buttons {
+		display: flex;
+		justify-content: center;
+		gap: 12px;
+	}
+
+	.share-btn {
+		width: 48px;
+		height: 48px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.3s ease;
+		text-decoration: none;
+		border: none;
+		cursor: pointer;
+	}
+
+	.share-btn:hover {
+		transform: scale(1.1);
+	}
+
+	.share-btn.whatsapp {
+		background: #25d366;
+		color: white;
+	}
+
+	.share-btn.twitter {
+		background: #1da1f2;
+		color: white;
+	}
+
+	.share-btn.facebook {
+		background: #1877f2;
+		color: white;
+	}
+
+	.share-btn.linkedin {
+		background: #0a66c2;
+		color: white;
+	}
+
+	.share-btn.copy {
+		background: var(--gray-200);
+		color: var(--gray-700);
+	}
+
+	.share-btn.copy.copied {
+		background: var(--success);
+		color: white;
+	}
+
+	.share-btn svg {
+		width: 22px;
+		height: 22px;
+	}
+
+	/* Error State */
+	.error-header {
+		background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(239, 68, 68, 0.1));
+	}
+
+	.error-header::before {
+		background: linear-gradient(90deg, transparent, var(--error), transparent);
+	}
+
+	.error-icon-bg {
+		background: linear-gradient(135deg, var(--error), #dc2626);
+		animation: none;
+	}
+
+	/* Receipt badge */
+	.receipt-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 8px 16px;
+		background: var(--success-light);
+		color: var(--success);
+		border-radius: 100px;
+		font-size: 0.85rem;
+		font-weight: 600;
+		margin-bottom: 16px;
+		animation: fadeIn 0.5s ease 0.6s both;
+	}
+
+	.receipt-badge svg {
+		width: 16px;
+		height: 16px;
+	}
+
+	/* Responsive */
+	@media (max-width: 480px) {
+		.success-header {
+			padding: 40px 24px 28px;
+		}
+
+		.donation-details {
+			padding: 24px;
+		}
+
+		.share-section {
+			padding: 20px 24px 28px;
+		}
+
+		.success-title {
+			font-size: 1.75rem;
+		}
+	}
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="success-page">
+	<!-- Background decorations -->
+	<div class="bg-decoration"></div>
+	<div class="bg-decoration"></div>
+	<div class="bg-decoration"></div>
+
+	<!-- Confetti canvas -->
+	<canvas id="confetti-canvas"></canvas>
+
+	<div class="success-container">
+		<div class="success-card">
+			{% if success and donation %}
+			<!-- Success Header -->
+			<div class="success-header">
+				<div class="success-icon-wrapper">
+					<div class="success-icon-bg"></div>
+					<div class="success-icon">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="20 6 9 17 4 12"></polyline>
+						</svg>
+					</div>
+				</div>
+
+				<div class="receipt-badge">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="20 6 9 17 4 12"></polyline>
+					</svg>
+					Receipt sent to your email
+				</div>
+
+				<h1 class="success-title">Thank You!</h1>
+				<p class="success-subtitle">Your generous donation has been received. Together, we're making a difference.</p>
+			</div>
+
+			<!-- Donation Details -->
+			<div class="donation-details">
+				<div class="detail-card">
+					<div class="detail-row amount">
+						<span class="detail-label">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<line x1="12" y1="1" x2="12" y2="23"></line>
+								<path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+							</svg>
+							Amount
+						</span>
+						<span class="detail-value">₹{{ "{:,.0f}".format(donation.amount) }}</span>
+					</div>
+					<div class="detail-row">
+						<span class="detail-label">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+								<polyline points="22,6 12,13 2,6"></polyline>
+							</svg>
+							Donation ID
+						</span>
+						<span class="detail-value">{{ donation.name }}</span>
+					</div>
+					{% if donation.campaign %}
+					<div class="detail-row">
+						<span class="detail-label">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+							</svg>
+							Campaign
+						</span>
+						<span class="detail-value">{{ donation.campaign }}</span>
+					</div>
+					{% endif %}
+					<div class="detail-row">
+						<span class="detail-label">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+								<line x1="16" y1="2" x2="16" y2="6"></line>
+								<line x1="8" y1="2" x2="8" y2="6"></line>
+								<line x1="3" y1="10" x2="21" y2="10"></line>
+							</svg>
+							Date
+						</span>
+						<span class="detail-value">{{ donation.donation_date.strftime('%d %b %Y') if donation.donation_date else 'Today' }}</span>
+					</div>
+					{% if donation.razorpay_payment_id %}
+					<div class="detail-row">
+						<span class="detail-label">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+								<line x1="1" y1="10" x2="23" y2="10"></line>
+							</svg>
+							Payment ID
+						</span>
+						<span class="detail-value" style="font-size: 0.8rem;">{{ donation.razorpay_payment_id }}</span>
+					</div>
+					{% endif %}
+				</div>
+
+				<div class="success-actions">
+					<a href="/donate" class="btn btn-primary">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+						</svg>
+						Donate Again
+					</a>
+					<a href="/" class="btn btn-secondary">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+							<polyline points="9 22 9 12 15 12 15 22"></polyline>
+						</svg>
+						Back to Home
+					</a>
+				</div>
+			</div>
+
+			<!-- Share Section -->
+			<div class="share-section">
+				<p class="share-title">Spread the word and inspire others</p>
+				<div class="share-buttons">
+					<a href="https://wa.me/?text=I%20just%20made%20a%20donation%20to%20TechNiti!%20Join%20me%20in%20making%20a%20difference.%20{{ request.host_url }}donate"
+					   target="_blank" class="share-btn whatsapp" title="Share on WhatsApp">
+						<svg viewBox="0 0 24 24" fill="currentColor">
+							<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+						</svg>
+					</a>
+					<a href="https://twitter.com/intent/tweet?text=I%20just%20donated%20to%20TechNiti!%20Join%20me%20in%20making%20a%20difference.&url={{ request.host_url }}donate"
+					   target="_blank" class="share-btn twitter" title="Share on Twitter">
+						<svg viewBox="0 0 24 24" fill="currentColor">
+							<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+						</svg>
+					</a>
+					<a href="https://www.facebook.com/sharer/sharer.php?u={{ request.host_url }}donate"
+					   target="_blank" class="share-btn facebook" title="Share on Facebook">
+						<svg viewBox="0 0 24 24" fill="currentColor">
+							<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+						</svg>
+					</a>
+					<a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.host_url }}donate"
+					   target="_blank" class="share-btn linkedin" title="Share on LinkedIn">
+						<svg viewBox="0 0 24 24" fill="currentColor">
+							<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+						</svg>
+					</a>
+					<button class="share-btn copy" id="copy-link" title="Copy Link">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+							<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+						</svg>
+					</button>
+				</div>
+			</div>
+
+			{% else %}
+			<!-- Error State -->
+			<div class="success-header error-header">
+				<div class="success-icon-wrapper">
+					<div class="success-icon-bg error-icon-bg"></div>
+					<div class="success-icon">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10"></circle>
+							<line x1="12" y1="8" x2="12" y2="12"></line>
+							<line x1="12" y1="16" x2="12.01" y2="16"></line>
+						</svg>
+					</div>
+				</div>
+
+				<h1 class="success-title">Something Went Wrong</h1>
+				<p class="success-subtitle">We couldn't find your donation details. If you made a payment, please contact our support team.</p>
+			</div>
+
+			<div class="donation-details">
+				<div class="success-actions">
+					<a href="/donate" class="btn btn-primary">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="1 4 1 10 7 10"></polyline>
+							<path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+						</svg>
+						Try Again
+					</a>
+					<a href="/" class="btn btn-secondary">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+							<polyline points="9 22 9 12 15 12 15 22"></polyline>
+						</svg>
+						Back to Home
+					</a>
+				</div>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+{% if success %}
+// Confetti Animation
+(function() {
+	const canvas = document.getElementById('confetti-canvas');
+	const ctx = canvas.getContext('2d');
+
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+
+	const colors = ['#7c3aed', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6'];
+	const confetti = [];
+
+	class ConfettiPiece {
+		constructor() {
+			this.reset();
+		}
+
+		reset() {
+			this.x = Math.random() * canvas.width;
+			this.y = -20;
+			this.size = Math.random() * 10 + 5;
+			this.speedY = Math.random() * 3 + 2;
+			this.speedX = Math.random() * 4 - 2;
+			this.rotation = Math.random() * 360;
+			this.rotationSpeed = Math.random() * 10 - 5;
+			this.color = colors[Math.floor(Math.random() * colors.length)];
+			this.shape = Math.random() > 0.5 ? 'rect' : 'circle';
+			this.opacity = 1;
+		}
+
+		update() {
+			this.y += this.speedY;
+			this.x += this.speedX;
+			this.rotation += this.rotationSpeed;
+			this.speedY += 0.1;
+
+			if (this.y > canvas.height + 20) {
+				this.opacity -= 0.02;
+				if (this.opacity <= 0) {
+					this.reset();
+					this.opacity = 1;
+				}
+			}
+		}
+
+		draw() {
+			ctx.save();
+			ctx.translate(this.x, this.y);
+			ctx.rotate(this.rotation * Math.PI / 180);
+			ctx.globalAlpha = this.opacity;
+			ctx.fillStyle = this.color;
+
+			if (this.shape === 'rect') {
+				ctx.fillRect(-this.size / 2, -this.size / 4, this.size, this.size / 2);
+			} else {
+				ctx.beginPath();
+				ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
+				ctx.fill();
+			}
+
+			ctx.restore();
+		}
+	}
+
+	// Create confetti pieces
+	for (let i = 0; i < 100; i++) {
+		const piece = new ConfettiPiece();
+		piece.y = Math.random() * canvas.height;
+		confetti.push(piece);
+	}
+
+	let frameCount = 0;
+	const maxFrames = 300;
+
+	function animate() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+		confetti.forEach(piece => {
+			piece.update();
+			piece.draw();
+		});
+
+		frameCount++;
+		if (frameCount < maxFrames) {
+			requestAnimationFrame(animate);
+		} else {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+		}
+	}
+
+	animate();
+
+	window.addEventListener('resize', () => {
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	});
+})();
+
+// Copy link functionality
+document.getElementById('copy-link')?.addEventListener('click', function() {
+	const url = window.location.origin + '/donate';
+	navigator.clipboard.writeText(url).then(() => {
+		this.classList.add('copied');
+		this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+		setTimeout(() => {
+			this.classList.remove('copied');
+			this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+		}, 2000);
+	});
+});
+{% endif %}
+</script>
+{% endblock %}

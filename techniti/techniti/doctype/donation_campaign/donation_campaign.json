@@ -1,0 +1,177 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:campaign_name",
+ "creation": "2024-01-17 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "campaign_name",
+  "status",
+  "column_break_1",
+  "start_date",
+  "end_date",
+  "section_break_details",
+  "description",
+  "campaign_image",
+  "section_break_goals",
+  "target_amount",
+  "column_break_2",
+  "collected_amount",
+  "donor_count",
+  "section_break_settings",
+  "is_default",
+  "show_on_website",
+  "allow_any_amount",
+  "column_break_3",
+  "minimum_amount",
+  "suggested_amounts"
+ ],
+ "fields": [
+  {
+   "fieldname": "campaign_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Campaign Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Active\nCompleted\nCancelled",
+   "default": "Active"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "default": "Today"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  },
+  {
+   "fieldname": "section_break_details",
+   "fieldtype": "Section Break",
+   "label": "Campaign Details"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  },
+  {
+   "fieldname": "campaign_image",
+   "fieldtype": "Attach Image",
+   "label": "Campaign Image"
+  },
+  {
+   "fieldname": "section_break_goals",
+   "fieldtype": "Section Break",
+   "label": "Goals & Progress"
+  },
+  {
+   "fieldname": "target_amount",
+   "fieldtype": "Currency",
+   "label": "Target Amount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "collected_amount",
+   "fieldtype": "Currency",
+   "label": "Collected Amount",
+   "read_only": 1,
+   "default": "0"
+  },
+  {
+   "fieldname": "donor_count",
+   "fieldtype": "Int",
+   "label": "Number of Donors",
+   "read_only": 1,
+   "default": "0"
+  },
+  {
+   "fieldname": "section_break_settings",
+   "fieldtype": "Section Break",
+   "label": "Settings"
+  },
+  {
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Is Default Campaign",
+   "description": "Default campaign for general donations"
+  },
+  {
+   "fieldname": "show_on_website",
+   "fieldtype": "Check",
+   "label": "Show on Website",
+   "default": "1"
+  },
+  {
+   "fieldname": "allow_any_amount",
+   "fieldtype": "Check",
+   "label": "Allow Any Amount",
+   "default": "1"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "minimum_amount",
+   "fieldtype": "Currency",
+   "label": "Minimum Amount",
+   "default": "100"
+  },
+  {
+   "fieldname": "suggested_amounts",
+   "fieldtype": "Data",
+   "label": "Suggested Amounts",
+   "description": "Comma separated values e.g. 500,1000,2500,5000",
+   "default": "500,1000,2500,5000,10000"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-17 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Techniti",
+ "name": "Donation Campaign",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "campaign_name",
+ "track_changes": 1
+}

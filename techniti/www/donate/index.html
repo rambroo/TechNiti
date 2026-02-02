@@ -1,0 +1,1502 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Donate - TechNiti{% endblock %}
+
+{% block head_include %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+	* {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+
+	:root {
+		--primary: #7c3aed;
+		--primary-dark: #6d28d9;
+		--primary-light: #a78bfa;
+		--secondary: #ec4899;
+		--success: #10b981;
+		--warning: #f59e0b;
+		--error: #ef4444;
+		--gray-50: #f9fafb;
+		--gray-100: #f3f4f6;
+		--gray-200: #e5e7eb;
+		--gray-300: #d1d5db;
+		--gray-400: #9ca3af;
+		--gray-500: #6b7280;
+		--gray-600: #4b5563;
+		--gray-700: #374151;
+		--gray-800: #1f2937;
+		--gray-900: #111827;
+		--radius-sm: 8px;
+		--radius-md: 12px;
+		--radius-lg: 16px;
+		--radius-xl: 24px;
+		--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+		--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+		--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+		--shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+		--shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+	}
+
+	body {
+		font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+	}
+
+	.donation-page {
+		min-height: 100vh;
+		background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+		position: relative;
+		overflow: hidden;
+	}
+
+	/* Animated background */
+	.bg-animation {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		z-index: 0;
+	}
+
+	.bg-animation .circle {
+		position: absolute;
+		border-radius: 50%;
+		background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(236, 72, 153, 0.3));
+		animation: float 20s infinite ease-in-out;
+	}
+
+	.bg-animation .circle:nth-child(1) {
+		width: 400px;
+		height: 400px;
+		top: -100px;
+		right: -100px;
+		animation-delay: 0s;
+	}
+
+	.bg-animation .circle:nth-child(2) {
+		width: 300px;
+		height: 300px;
+		bottom: -50px;
+		left: -50px;
+		animation-delay: -5s;
+	}
+
+	.bg-animation .circle:nth-child(3) {
+		width: 200px;
+		height: 200px;
+		top: 50%;
+		left: 20%;
+		animation-delay: -10s;
+	}
+
+	@keyframes float {
+		0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+		33% { transform: translateY(-30px) rotate(120deg) scale(1.1); }
+		66% { transform: translateY(20px) rotate(240deg) scale(0.9); }
+	}
+
+	.donation-container {
+		position: relative;
+		z-index: 1;
+		max-width: 1000px;
+		margin: 0 auto;
+		padding: 40px 20px;
+	}
+
+	/* Header */
+	.donation-header {
+		text-align: center;
+		margin-bottom: 40px;
+		animation: fadeInDown 0.8s ease;
+	}
+
+	@keyframes fadeInDown {
+		from {
+			opacity: 0;
+			transform: translateY(-30px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.logo-icon {
+		width: 80px;
+		height: 80px;
+		background: linear-gradient(135deg, var(--primary), var(--secondary));
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 auto 20px;
+		box-shadow: 0 10px 40px rgba(124, 58, 237, 0.4);
+		animation: pulse 2s infinite;
+	}
+
+	@keyframes pulse {
+		0%, 100% { box-shadow: 0 10px 40px rgba(124, 58, 237, 0.4); }
+		50% { box-shadow: 0 10px 60px rgba(124, 58, 237, 0.6); }
+	}
+
+	.logo-icon svg {
+		width: 40px;
+		height: 40px;
+		color: white;
+	}
+
+	.donation-header h1 {
+		font-size: 3rem;
+		font-weight: 800;
+		color: white;
+		margin-bottom: 12px;
+		letter-spacing: -0.02em;
+		text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+	}
+
+	.donation-header p {
+		font-size: 1.2rem;
+		color: rgba(255, 255, 255, 0.8);
+		max-width: 500px;
+		margin: 0 auto;
+		line-height: 1.6;
+	}
+
+	/* Main Card */
+	.donation-card {
+		background: white;
+		border-radius: var(--radius-xl);
+		box-shadow: var(--shadow-2xl);
+		overflow: hidden;
+		animation: fadeInUp 0.8s ease 0.2s both;
+	}
+
+	@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(30px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* Steps indicator */
+	.steps-indicator {
+		display: flex;
+		justify-content: center;
+		gap: 8px;
+		padding: 24px;
+		background: var(--gray-50);
+		border-bottom: 1px solid var(--gray-200);
+	}
+
+	.step {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		color: var(--gray-400);
+		font-size: 0.875rem;
+		font-weight: 500;
+		transition: all 0.3s ease;
+	}
+
+	.step.active {
+		color: var(--primary);
+	}
+
+	.step.completed {
+		color: var(--success);
+	}
+
+	.step-number {
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		background: var(--gray-200);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+		font-size: 0.8rem;
+		transition: all 0.3s ease;
+	}
+
+	.step.active .step-number {
+		background: var(--primary);
+		color: white;
+		box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+	}
+
+	.step.completed .step-number {
+		background: var(--success);
+		color: white;
+	}
+
+	.step-divider {
+		width: 40px;
+		height: 2px;
+		background: var(--gray-200);
+		border-radius: 1px;
+	}
+
+	.step-divider.active {
+		background: var(--primary);
+	}
+
+	/* Campaign Section */
+	.campaign-section {
+		padding: 32px;
+		border-bottom: 1px solid var(--gray-100);
+	}
+
+	.section-title {
+		font-size: 1.25rem;
+		font-weight: 700;
+		color: var(--gray-900);
+		margin-bottom: 8px;
+	}
+
+	.section-subtitle {
+		font-size: 0.9rem;
+		color: var(--gray-500);
+		margin-bottom: 24px;
+	}
+
+	.campaign-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 16px;
+	}
+
+	.campaign-card {
+		position: relative;
+		border: 2px solid var(--gray-200);
+		border-radius: var(--radius-lg);
+		padding: 24px;
+		cursor: pointer;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		background: white;
+		overflow: hidden;
+	}
+
+	.campaign-card::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 4px;
+		background: linear-gradient(90deg, var(--primary), var(--secondary));
+		transform: scaleX(0);
+		transition: transform 0.3s ease;
+	}
+
+	.campaign-card:hover {
+		border-color: var(--primary-light);
+		transform: translateY(-4px);
+		box-shadow: var(--shadow-lg);
+	}
+
+	.campaign-card:hover::before {
+		transform: scaleX(1);
+	}
+
+	.campaign-card.selected {
+		border-color: var(--primary);
+		background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(236, 72, 153, 0.05));
+	}
+
+	.campaign-card.selected::before {
+		transform: scaleX(1);
+	}
+
+	.campaign-check {
+		position: absolute;
+		top: 16px;
+		right: 16px;
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		background: var(--primary);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		transform: scale(0.5);
+		transition: all 0.3s ease;
+	}
+
+	.campaign-card.selected .campaign-check {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	.campaign-check svg {
+		width: 16px;
+		height: 16px;
+		color: white;
+	}
+
+	.campaign-name {
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: var(--gray-900);
+		margin-bottom: 8px;
+		padding-right: 40px;
+	}
+
+	.campaign-desc {
+		font-size: 0.875rem;
+		color: var(--gray-500);
+		margin-bottom: 16px;
+		line-height: 1.5;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.campaign-progress-wrapper {
+		margin-bottom: 12px;
+	}
+
+	.campaign-progress-bar {
+		height: 8px;
+		background: var(--gray-100);
+		border-radius: 4px;
+		overflow: hidden;
+	}
+
+	.campaign-progress-fill {
+		height: 100%;
+		background: linear-gradient(90deg, var(--primary), var(--secondary));
+		border-radius: 4px;
+		transition: width 1s ease;
+		position: relative;
+	}
+
+	.campaign-progress-fill::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+		animation: shimmer 2s infinite;
+	}
+
+	@keyframes shimmer {
+		0% { transform: translateX(-100%); }
+		100% { transform: translateX(100%); }
+	}
+
+	.campaign-stats {
+		display: flex;
+		justify-content: space-between;
+		font-size: 0.8rem;
+	}
+
+	.campaign-stat {
+		color: var(--gray-600);
+	}
+
+	.campaign-stat strong {
+		color: var(--gray-900);
+		font-weight: 600;
+	}
+
+	/* Amount Section */
+	.amount-section {
+		padding: 32px;
+		border-bottom: 1px solid var(--gray-100);
+	}
+
+	.amount-grid {
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		gap: 12px;
+		margin-bottom: 24px;
+	}
+
+	@media (max-width: 768px) {
+		.amount-grid {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+
+	@media (max-width: 480px) {
+		.amount-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	.amount-option {
+		position: relative;
+		padding: 16px 12px;
+		border: 2px solid var(--gray-200);
+		border-radius: var(--radius-md);
+		background: white;
+		cursor: pointer;
+		text-align: center;
+		transition: all 0.2s ease;
+		overflow: hidden;
+	}
+
+	.amount-option:hover {
+		border-color: var(--primary-light);
+		transform: scale(1.02);
+	}
+
+	.amount-option.selected {
+		border-color: var(--primary);
+		background: linear-gradient(135deg, var(--primary), var(--secondary));
+		color: white;
+		transform: scale(1.05);
+		box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
+	}
+
+	.amount-option.popular::before {
+		content: 'Popular';
+		position: absolute;
+		top: -1px;
+		right: -1px;
+		background: var(--warning);
+		color: white;
+		font-size: 0.65rem;
+		font-weight: 600;
+		padding: 2px 8px;
+		border-radius: 0 8px 0 8px;
+	}
+
+	.amount-value {
+		font-size: 1.25rem;
+		font-weight: 700;
+	}
+
+	.amount-label {
+		font-size: 0.75rem;
+		opacity: 0.8;
+		margin-top: 2px;
+	}
+
+	.custom-amount-container {
+		position: relative;
+		max-width: 100%;
+	}
+
+	.custom-amount-label {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--gray-700);
+		margin-bottom: 8px;
+		display: block;
+	}
+
+	.custom-amount-input-wrapper {
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
+
+	.currency-prefix {
+		position: absolute;
+		left: 16px;
+		font-size: 1.5rem;
+		font-weight: 700;
+		color: var(--gray-400);
+		pointer-events: none;
+		transition: color 0.3s ease;
+	}
+
+	.custom-amount-input {
+		width: 100%;
+		padding: 16px 16px 16px 48px;
+		font-size: 1.5rem;
+		font-weight: 700;
+		border: 2px solid var(--gray-200);
+		border-radius: var(--radius-md);
+		transition: all 0.3s ease;
+		color: var(--gray-900);
+	}
+
+	.custom-amount-input:focus {
+		outline: none;
+		border-color: var(--primary);
+		box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+	}
+
+	.custom-amount-input:focus + .currency-prefix,
+	.custom-amount-input-wrapper:focus-within .currency-prefix {
+		color: var(--primary);
+	}
+
+	.custom-amount-input::placeholder {
+		color: var(--gray-300);
+		font-weight: 500;
+	}
+
+	/* Donor Section */
+	.donor-section {
+		padding: 32px;
+		border-bottom: 1px solid var(--gray-100);
+	}
+
+	.form-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 20px;
+	}
+
+	@media (max-width: 600px) {
+		.form-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.form-group {
+		margin-bottom: 0;
+	}
+
+	.form-group.full-width {
+		grid-column: 1 / -1;
+	}
+
+	.form-label {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--gray-700);
+		margin-bottom: 8px;
+	}
+
+	.form-label .required {
+		color: var(--error);
+	}
+
+	.form-label .optional {
+		color: var(--gray-400);
+		font-weight: 400;
+		font-size: 0.8rem;
+	}
+
+	.form-input {
+		width: 100%;
+		padding: 14px 16px;
+		font-size: 1rem;
+		border: 2px solid var(--gray-200);
+		border-radius: var(--radius-md);
+		transition: all 0.3s ease;
+		color: var(--gray-900);
+		background: white;
+	}
+
+	.form-input:focus {
+		outline: none;
+		border-color: var(--primary);
+		box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+	}
+
+	.form-input::placeholder {
+		color: var(--gray-400);
+	}
+
+	.form-input.error {
+		border-color: var(--error);
+		box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+	}
+
+	textarea.form-input {
+		resize: vertical;
+		min-height: 100px;
+	}
+
+	/* Checkbox */
+	.checkbox-wrapper {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 16px;
+		background: var(--gray-50);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.checkbox-wrapper:hover {
+		background: var(--gray-100);
+	}
+
+	.custom-checkbox {
+		position: relative;
+		width: 24px;
+		height: 24px;
+		flex-shrink: 0;
+	}
+
+	.custom-checkbox input {
+		position: absolute;
+		opacity: 0;
+		width: 100%;
+		height: 100%;
+		cursor: pointer;
+	}
+
+	.checkbox-mark {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 24px;
+		height: 24px;
+		border: 2px solid var(--gray-300);
+		border-radius: 6px;
+		transition: all 0.2s ease;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.custom-checkbox input:checked + .checkbox-mark {
+		background: var(--primary);
+		border-color: var(--primary);
+	}
+
+	.checkbox-mark svg {
+		width: 14px;
+		height: 14px;
+		color: white;
+		opacity: 0;
+		transform: scale(0.5);
+		transition: all 0.2s ease;
+	}
+
+	.custom-checkbox input:checked + .checkbox-mark svg {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	.checkbox-text {
+		font-size: 0.9rem;
+		color: var(--gray-700);
+	}
+
+	.checkbox-text strong {
+		color: var(--gray-900);
+	}
+
+	/* Submit Section */
+	.submit-section {
+		padding: 32px;
+		background: linear-gradient(135deg, rgba(124, 58, 237, 0.03), rgba(236, 72, 153, 0.03));
+	}
+
+	.donation-summary {
+		background: white;
+		border: 2px solid var(--gray-100);
+		border-radius: var(--radius-lg);
+		padding: 24px;
+		margin-bottom: 24px;
+	}
+
+	.summary-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 12px 0;
+		border-bottom: 1px solid var(--gray-100);
+	}
+
+	.summary-row:last-child {
+		border-bottom: none;
+		padding-bottom: 0;
+	}
+
+	.summary-row.total {
+		padding-top: 16px;
+		margin-top: 8px;
+		border-top: 2px solid var(--gray-200);
+		border-bottom: none;
+	}
+
+	.summary-label {
+		font-size: 0.9rem;
+		color: var(--gray-600);
+	}
+
+	.summary-value {
+		font-weight: 600;
+		color: var(--gray-900);
+	}
+
+	.summary-row.total .summary-label {
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: var(--gray-900);
+	}
+
+	.summary-row.total .summary-value {
+		font-size: 1.5rem;
+		font-weight: 800;
+		background: linear-gradient(135deg, var(--primary), var(--secondary));
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+
+	.donate-button {
+		width: 100%;
+		padding: 20px 32px;
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: white;
+		background: linear-gradient(135deg, var(--primary), var(--secondary));
+		border: none;
+		border-radius: var(--radius-lg);
+		cursor: pointer;
+		transition: all 0.3s ease;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.donate-button::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+		transition: left 0.5s ease;
+	}
+
+	.donate-button:hover::before {
+		left: 100%;
+	}
+
+	.donate-button:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 12px 24px rgba(124, 58, 237, 0.4);
+	}
+
+	.donate-button:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
+		transform: none;
+	}
+
+	.donate-button .spinner {
+		width: 24px;
+		height: 24px;
+		border: 3px solid rgba(255,255,255,0.3);
+		border-top-color: white;
+		border-radius: 50%;
+		animation: spin 0.8s linear infinite;
+	}
+
+	@keyframes spin {
+		to { transform: rotate(360deg); }
+	}
+
+	.secure-badge {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		margin-top: 16px;
+		color: var(--gray-500);
+		font-size: 0.85rem;
+	}
+
+	.secure-badge svg {
+		color: var(--success);
+	}
+
+	/* Error message */
+	.error-alert {
+		display: none;
+		align-items: center;
+		gap: 12px;
+		padding: 16px;
+		background: #fef2f2;
+		border: 1px solid #fecaca;
+		border-radius: var(--radius-md);
+		margin-bottom: 24px;
+		animation: shake 0.5s ease;
+	}
+
+	@keyframes shake {
+		0%, 100% { transform: translateX(0); }
+		20%, 60% { transform: translateX(-5px); }
+		40%, 80% { transform: translateX(5px); }
+	}
+
+	.error-alert.show {
+		display: flex;
+	}
+
+	.error-alert svg {
+		flex-shrink: 0;
+		color: var(--error);
+	}
+
+	.error-alert-text {
+		color: var(--error);
+		font-size: 0.9rem;
+		font-weight: 500;
+	}
+
+	/* No campaigns state */
+	.no-campaigns {
+		text-align: center;
+		padding: 80px 40px;
+	}
+
+	.no-campaigns-icon {
+		width: 80px;
+		height: 80px;
+		background: var(--gray-100);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 auto 24px;
+	}
+
+	.no-campaigns-icon svg {
+		width: 40px;
+		height: 40px;
+		color: var(--gray-400);
+	}
+
+	.no-campaigns h3 {
+		font-size: 1.5rem;
+		font-weight: 700;
+		color: var(--gray-900);
+		margin-bottom: 8px;
+	}
+
+	.no-campaigns p {
+		color: var(--gray-500);
+		max-width: 400px;
+		margin: 0 auto;
+	}
+
+	/* Impact cards */
+	.impact-section {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 16px;
+		margin-top: 40px;
+		animation: fadeInUp 0.8s ease 0.4s both;
+	}
+
+	@media (max-width: 768px) {
+		.impact-section {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.impact-card {
+		background: rgba(255, 255, 255, 0.1);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: var(--radius-lg);
+		padding: 24px;
+		text-align: center;
+		color: white;
+	}
+
+	.impact-icon {
+		width: 48px;
+		height: 48px;
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 12px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 auto 12px;
+	}
+
+	.impact-icon svg {
+		width: 24px;
+		height: 24px;
+	}
+
+	.impact-number {
+		font-size: 2rem;
+		font-weight: 800;
+		margin-bottom: 4px;
+	}
+
+	.impact-label {
+		font-size: 0.85rem;
+		opacity: 0.8;
+	}
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="donation-page">
+	<!-- Animated background -->
+	<div class="bg-animation">
+		<div class="circle"></div>
+		<div class="circle"></div>
+		<div class="circle"></div>
+	</div>
+
+	<div class="donation-container">
+		<!-- Header -->
+		<div class="donation-header">
+			<div class="logo-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+				</svg>
+			</div>
+			<h1>Make a Difference</h1>
+			<p>Your generosity creates ripples of change. Every contribution, big or small, helps us build a better tomorrow.</p>
+		</div>
+
+		{% if campaigns %}
+		<!-- Main Card -->
+		<div class="donation-card">
+			<!-- Steps -->
+			<div class="steps-indicator">
+				<div class="step active" data-step="1">
+					<span class="step-number">1</span>
+					<span class="step-text">Amount</span>
+				</div>
+				<div class="step-divider"></div>
+				<div class="step" data-step="2">
+					<span class="step-number">2</span>
+					<span class="step-text">Details</span>
+				</div>
+				<div class="step-divider"></div>
+				<div class="step" data-step="3">
+					<span class="step-number">3</span>
+					<span class="step-text">Payment</span>
+				</div>
+			</div>
+
+			<form id="donation-form">
+				<!-- Campaign Selection -->
+				{% if campaigns|length > 1 %}
+				<div class="campaign-section">
+					<h2 class="section-title">Choose a Cause</h2>
+					<p class="section-subtitle">Select the campaign you'd like to support</p>
+
+					<div class="campaign-grid">
+						{% for campaign in campaigns %}
+						<div class="campaign-card {% if campaign.is_default %}selected{% endif %}"
+							 data-campaign="{{ campaign.name }}"
+							 data-minimum="{{ campaign.minimum_amount or 100 }}"
+							 data-suggested="{{ campaign.suggested_amounts or '500,1000,2500,5000,10000' }}">
+							<div class="campaign-check">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="20 6 9 17 4 12"></polyline>
+								</svg>
+							</div>
+							<h3 class="campaign-name">{{ campaign.campaign_name }}</h3>
+							{% if campaign.description %}
+							<p class="campaign-desc">{{ campaign.description|striptags|truncate(80) }}</p>
+							{% endif %}
+							{% if campaign.target_amount %}
+							<div class="campaign-progress-wrapper">
+								<div class="campaign-progress-bar">
+									<div class="campaign-progress-fill"
+										 style="width: {{ [((campaign.collected_amount or 0) / campaign.target_amount * 100), 100]|min|int }}%"></div>
+								</div>
+							</div>
+							<div class="campaign-stats">
+								<span class="campaign-stat"><strong>₹{{ "{:,.0f}".format(campaign.collected_amount or 0) }}</strong> raised</span>
+								<span class="campaign-stat"><strong>{{ campaign.donor_count or 0 }}</strong> donors</span>
+							</div>
+							{% endif %}
+						</div>
+						{% endfor %}
+					</div>
+				</div>
+				{% else %}
+				<input type="hidden" id="campaign" value="{{ campaigns[0].name }}">
+				{% endif %}
+
+				<!-- Amount Selection -->
+				<div class="amount-section">
+					<h2 class="section-title">Select Amount</h2>
+					<p class="section-subtitle">Choose a preset amount or enter your own</p>
+
+					<div class="error-alert" id="error-message">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10"></circle>
+							<line x1="12" y1="8" x2="12" y2="12"></line>
+							<line x1="12" y1="16" x2="12.01" y2="16"></line>
+						</svg>
+						<span class="error-alert-text"></span>
+					</div>
+
+					<div class="amount-grid" id="amount-grid">
+						{% set amounts = (default_campaign.suggested_amounts or '500,1000,2500,5000,10000').split(',') %}
+						{% for amount in amounts %}
+						<div class="amount-option {% if loop.index == 2 %}popular{% endif %}" data-amount="{{ amount|trim }}">
+							<div class="amount-value">₹{{ "{:,}".format(amount|trim|int) }}</div>
+						</div>
+						{% endfor %}
+					</div>
+
+					<div class="custom-amount-container">
+						<label class="custom-amount-label">Or enter custom amount</label>
+						<div class="custom-amount-input-wrapper">
+							<input type="number" id="amount" class="custom-amount-input"
+								   placeholder="0"
+								   min="{{ default_campaign.minimum_amount or 100 }}">
+							<span class="currency-prefix">₹</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Donor Information -->
+				<div class="donor-section">
+					<h2 class="section-title">Your Information</h2>
+					<p class="section-subtitle">We'll send your donation receipt to this email</p>
+
+					<div class="form-grid">
+						<div class="form-group">
+							<label class="form-label">
+								Full Name <span class="required">*</span>
+							</label>
+							<input type="text" id="full_name" class="form-input" placeholder="John Doe" required>
+						</div>
+						<div class="form-group">
+							<label class="form-label">
+								Email Address <span class="required">*</span>
+							</label>
+							<input type="email" id="email" class="form-input" placeholder="john@example.com" required>
+						</div>
+						<div class="form-group">
+							<label class="form-label">
+								Phone Number <span class="optional">(Optional)</span>
+							</label>
+							<input type="tel" id="mobile" class="form-input" placeholder="+91 98765 43210">
+						</div>
+						<div class="form-group">
+							<label class="form-label">
+								PAN Number <span class="optional">(For 80G receipt)</span>
+							</label>
+							<input type="text" id="pan_number" class="form-input" placeholder="ABCDE1234F"
+								   style="text-transform: uppercase;">
+						</div>
+						<div class="form-group full-width">
+							<label class="form-label">
+								Message <span class="optional">(Optional)</span>
+							</label>
+							<textarea id="message" class="form-input" placeholder="Share a few words about why you're donating..."></textarea>
+						</div>
+						<div class="form-group full-width">
+							<label class="checkbox-wrapper">
+								<div class="custom-checkbox">
+									<input type="checkbox" id="is_anonymous">
+									<span class="checkbox-mark">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+											<polyline points="20 6 9 17 4 12"></polyline>
+										</svg>
+									</span>
+								</div>
+								<span class="checkbox-text">
+									<strong>Make my donation anonymous</strong> - Your name won't be displayed publicly
+								</span>
+							</label>
+						</div>
+					</div>
+				</div>
+
+				<!-- Submit Section -->
+				<div class="submit-section">
+					<div class="donation-summary">
+						<div class="summary-row">
+							<span class="summary-label">Campaign</span>
+							<span class="summary-value" id="summary-campaign">{{ default_campaign.campaign_name if default_campaign else 'General' }}</span>
+						</div>
+						<div class="summary-row">
+							<span class="summary-label">Donor</span>
+							<span class="summary-value" id="summary-donor">-</span>
+						</div>
+						<div class="summary-row total">
+							<span class="summary-label">Total Amount</span>
+							<span class="summary-value" id="summary-amount">₹0</span>
+						</div>
+					</div>
+
+					<button type="submit" class="donate-button" id="donate-btn">
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+						</svg>
+						<span id="btn-text">Complete Donation</span>
+					</button>
+
+					<div class="secure-badge">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+							<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+						</svg>
+						Secured by 256-bit SSL encryption • Powered by Razorpay
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<!-- Impact Stats -->
+		<div class="impact-section">
+			<div class="impact-card">
+				<div class="impact-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+						<circle cx="9" cy="7" r="4"></circle>
+						<path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+						<path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+					</svg>
+				</div>
+				<div class="impact-number">1,000+</div>
+				<div class="impact-label">Donors Trust Us</div>
+			</div>
+			<div class="impact-card">
+				<div class="impact-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="12" y1="1" x2="12" y2="23"></line>
+						<path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+					</svg>
+				</div>
+				<div class="impact-number">₹10L+</div>
+				<div class="impact-label">Raised So Far</div>
+			</div>
+			<div class="impact-card">
+				<div class="impact-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+					</svg>
+				</div>
+				<div class="impact-number">50+</div>
+				<div class="impact-label">Projects Funded</div>
+			</div>
+		</div>
+
+		{% else %}
+		<div class="donation-card">
+			<div class="no-campaigns">
+				<div class="no-campaigns-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<circle cx="12" cy="12" r="10"></circle>
+						<line x1="12" y1="8" x2="12" y2="12"></line>
+						<line x1="12" y1="16" x2="12.01" y2="16"></line>
+					</svg>
+				</div>
+				<h3>No Active Campaigns</h3>
+				<p>We don't have any active donation campaigns at the moment. Please check back later or contact us for more information.</p>
+			</div>
+		</div>
+		{% endif %}
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	const form = document.getElementById('donation-form');
+	if (!form) return;
+
+	// Elements
+	const amountInput = document.getElementById('amount');
+	const amountGrid = document.getElementById('amount-grid');
+	const campaignCards = document.querySelectorAll('.campaign-card');
+	const donateBtn = document.getElementById('donate-btn');
+	const btnText = document.getElementById('btn-text');
+	const errorMessage = document.getElementById('error-message');
+	const errorText = errorMessage.querySelector('.error-alert-text');
+	const fullNameInput = document.getElementById('full_name');
+
+	// Summary elements
+	const summaryCampaign = document.getElementById('summary-campaign');
+	const summaryDonor = document.getElementById('summary-donor');
+	const summaryAmount = document.getElementById('summary-amount');
+
+	// Steps
+	const steps = document.querySelectorAll('.step');
+	const stepDividers = document.querySelectorAll('.step-divider');
+
+	// State
+	let selectedAmount = 0;
+	let selectedCampaign = document.querySelector('.campaign-card.selected')?.dataset.campaign ||
+						   document.getElementById('campaign')?.value || '';
+	let minimumAmount = parseInt(document.querySelector('.campaign-card.selected')?.dataset.minimum || 100);
+
+	// Initialize amount options
+	function initAmountOptions() {
+		document.querySelectorAll('.amount-option').forEach(option => {
+			option.addEventListener('click', function() {
+				document.querySelectorAll('.amount-option').forEach(o => o.classList.remove('selected'));
+				this.classList.add('selected');
+				selectedAmount = parseInt(this.dataset.amount);
+				amountInput.value = selectedAmount;
+				updateSummary();
+				hideError();
+				updateSteps(1);
+			});
+		});
+	}
+	initAmountOptions();
+
+	// Custom amount input
+	amountInput.addEventListener('input', function() {
+		selectedAmount = parseInt(this.value) || 0;
+		document.querySelectorAll('.amount-option').forEach(o => o.classList.remove('selected'));
+		updateSummary();
+		hideError();
+		if (selectedAmount >= minimumAmount) {
+			updateSteps(1);
+		}
+	});
+
+	amountInput.addEventListener('focus', function() {
+		document.querySelectorAll('.amount-option').forEach(o => o.classList.remove('selected'));
+	});
+
+	// Campaign selection
+	campaignCards.forEach(card => {
+		card.addEventListener('click', function() {
+			campaignCards.forEach(c => c.classList.remove('selected'));
+			this.classList.add('selected');
+			selectedCampaign = this.dataset.campaign;
+			minimumAmount = parseInt(this.dataset.minimum) || 100;
+
+			// Update summary
+			summaryCampaign.textContent = this.querySelector('.campaign-name').textContent;
+
+			// Update amount options
+			const suggestedAmounts = this.dataset.suggested.split(',');
+			amountGrid.innerHTML = suggestedAmounts.map((amt, i) => `
+				<div class="amount-option ${i === 1 ? 'popular' : ''}" data-amount="${amt.trim()}">
+					<div class="amount-value">₹${parseInt(amt.trim()).toLocaleString('en-IN')}</div>
+				</div>
+			`).join('');
+
+			initAmountOptions();
+			amountInput.min = minimumAmount;
+			hideError();
+		});
+	});
+
+	// Update donor name in summary
+	fullNameInput.addEventListener('input', function() {
+		summaryDonor.textContent = this.value || '-';
+		if (this.value.trim()) {
+			updateSteps(2);
+		}
+	});
+
+	// Update summary
+	function updateSummary() {
+		summaryAmount.textContent = selectedAmount > 0 ? `₹${selectedAmount.toLocaleString('en-IN')}` : '₹0';
+	}
+
+	// Update steps indicator
+	function updateSteps(completedStep) {
+		steps.forEach((step, i) => {
+			if (i < completedStep) {
+				step.classList.add('completed');
+				step.classList.remove('active');
+			} else if (i === completedStep) {
+				step.classList.add('active');
+				step.classList.remove('completed');
+			} else {
+				step.classList.remove('active', 'completed');
+			}
+		});
+
+		stepDividers.forEach((divider, i) => {
+			if (i < completedStep) {
+				divider.classList.add('active');
+			} else {
+				divider.classList.remove('active');
+			}
+		});
+	}
+
+	// Error handling
+	function showError(msg) {
+		errorText.textContent = msg;
+		errorMessage.classList.add('show');
+		errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	}
+
+	function hideError() {
+		errorMessage.classList.remove('show');
+	}
+
+	// Loading state
+	function setLoading(loading) {
+		donateBtn.disabled = loading;
+		if (loading) {
+			btnText.innerHTML = '<div class="spinner"></div> Processing...';
+		} else {
+			btnText.innerHTML = `
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+				</svg>
+				Complete Donation
+			`;
+		}
+	}
+
+	// Form submission
+	form.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		hideError();
+
+		const fullName = document.getElementById('full_name').value.trim();
+		const email = document.getElementById('email').value.trim();
+		const mobile = document.getElementById('mobile').value.trim();
+		const panNumber = document.getElementById('pan_number').value.trim().toUpperCase();
+		const message = document.getElementById('message').value.trim();
+		const isAnonymous = document.getElementById('is_anonymous').checked;
+
+		// Validation
+		if (!selectedAmount || selectedAmount < minimumAmount) {
+			showError(`Please select an amount of at least ₹${minimumAmount.toLocaleString('en-IN')}`);
+			return;
+		}
+
+		if (!fullName) {
+			showError('Please enter your full name');
+			document.getElementById('full_name').focus();
+			return;
+		}
+
+		if (!email) {
+			showError('Please enter your email address');
+			document.getElementById('email').focus();
+			return;
+		}
+
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+			showError('Please enter a valid email address');
+			document.getElementById('email').focus();
+			return;
+		}
+
+		if (panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber)) {
+			showError('Please enter a valid PAN number (e.g., ABCDE1234F)');
+			document.getElementById('pan_number').focus();
+			return;
+		}
+
+		updateSteps(3);
+		setLoading(true);
+
+		try {
+			const response = await fetch('/api/method/techniti.api.create_donation_order', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-Frappe-CSRF-Token': frappe.csrf_token
+				},
+				body: JSON.stringify({
+					amount: selectedAmount,
+					campaign: selectedCampaign,
+					full_name: fullName,
+					email: email,
+					mobile: mobile,
+					pan_number: panNumber,
+					message: message,
+					is_anonymous: isAnonymous
+				})
+			});
+
+			const data = await response.json();
+
+			if (data.message && data.message.order_id) {
+				const options = {
+					key: data.message.razorpay_key_id,
+					amount: data.message.amount * 100,
+					currency: 'INR',
+					name: 'TechNiti',
+					description: 'Donation' + (selectedCampaign ? ' - ' + selectedCampaign : ''),
+					order_id: data.message.order_id,
+					prefill: {
+						name: fullName,
+						email: email,
+						contact: mobile
+					},
+					theme: {
+						color: '#7c3aed'
+					},
+					handler: async function(paymentResponse) {
+						try {
+							const verifyResponse = await fetch('/api/method/techniti.api.verify_donation_payment', {
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json',
+									'X-Frappe-CSRF-Token': frappe.csrf_token
+								},
+								body: JSON.stringify({
+									donation_id: data.message.donation_id,
+									razorpay_payment_id: paymentResponse.razorpay_payment_id,
+									razorpay_order_id: paymentResponse.razorpay_order_id,
+									razorpay_signature: paymentResponse.razorpay_signature
+								})
+							});
+
+							const verifyData = await verifyResponse.json();
+
+							if (verifyData.message && verifyData.message.success) {
+								window.location.href = '/donation-success?id=' + data.message.donation_id;
+							} else {
+								showError('Payment verification failed. Please contact support.');
+								setLoading(false);
+								updateSteps(2);
+							}
+						} catch (err) {
+							showError('Payment verification failed. Please contact support.');
+							setLoading(false);
+							updateSteps(2);
+						}
+					},
+					modal: {
+						ondismiss: function() {
+							setLoading(false);
+							updateSteps(2);
+						}
+					}
+				};
+
+				const razorpay = new Razorpay(options);
+				razorpay.open();
+			} else {
+				const errorMsg = data.exception || data.exc || 'Failed to create order. Please try again.';
+				showError(errorMsg);
+				setLoading(false);
+				updateSteps(2);
+			}
+		} catch (err) {
+			console.error(err);
+			showError('Something went wrong. Please try again.');
+			setLoading(false);
+			updateSteps(2);
+		}
+	});
+});
+</script>
+{% endblock %}

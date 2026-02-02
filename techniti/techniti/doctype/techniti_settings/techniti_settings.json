@@ -1,0 +1,90 @@
+{
+ "actions": [],
+ "creation": "2024-01-17 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "razorpay_section",
+  "razorpay_key_id",
+  "razorpay_key_secret",
+  "column_break_1",
+  "razorpay_webhook_secret",
+  "notification_section",
+  "send_donation_receipt",
+  "receipt_email_template"
+ ],
+ "fields": [
+  {
+   "fieldname": "razorpay_section",
+   "fieldtype": "Section Break",
+   "label": "Razorpay Configuration"
+  },
+  {
+   "fieldname": "razorpay_key_id",
+   "fieldtype": "Data",
+   "label": "Razorpay Key ID",
+   "reqd": 1,
+   "description": "API Key ID from Razorpay Dashboard"
+  },
+  {
+   "fieldname": "razorpay_key_secret",
+   "fieldtype": "Password",
+   "label": "Razorpay Key Secret",
+   "reqd": 1,
+   "description": "API Key Secret from Razorpay Dashboard"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "razorpay_webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook Secret",
+   "description": "Secret for verifying webhook signatures"
+  },
+  {
+   "fieldname": "notification_section",
+   "fieldtype": "Section Break",
+   "label": "Notifications"
+  },
+  {
+   "fieldname": "send_donation_receipt",
+   "fieldtype": "Check",
+   "label": "Send Donation Receipt Email",
+   "default": "1"
+  },
+  {
+   "fieldname": "receipt_email_template",
+   "fieldtype": "Link",
+   "label": "Receipt Email Template",
+   "options": "Email Template",
+   "depends_on": "send_donation_receipt"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-01-17 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Techniti",
+ "name": "Techniti Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
