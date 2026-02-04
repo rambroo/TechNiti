@@ -12,7 +12,7 @@ def get_context(context):
 
 	# Get active campaigns
 	campaigns = frappe.get_all(
-		"Donation Campaign",
+		"Website Donation Campaign",
 		filters={
 			"status": "Active",
 			"show_on_website": 1
@@ -38,6 +38,6 @@ def get_context(context):
 		context.default_campaign = campaigns[0]
 
 	# Get Razorpay settings
-	context.razorpay_key_id = frappe.db.get_single_value("Techniti Settings", "razorpay_key_id") or ""
+	context.razorpay_key_id = frappe.db.get_single_value("Website Donation Settings", "razorpay_key_id") or ""
 
 	return context

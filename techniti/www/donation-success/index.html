@@ -1,11 +1,11 @@
 {% extends "templates/web.html" %}
 
-{% block title %}{% if success %}Thank You!{% else %}Donation Status{% endif %} - TechNiti{% endblock %}
+{% block title %}{% if success %}Thank You!{% else %}Donation Status{% endif %} - WCWW{% endblock %}
 
 {% block head_include %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 	* {
 		margin: 0;
@@ -14,12 +14,13 @@
 	}
 
 	:root {
-		--primary: #7c3aed;
-		--primary-dark: #6d28d9;
-		--secondary: #ec4899;
-		--success: #10b981;
+		--primary: #3cc88f;
+		--primary-dark: #2ba872;
+		--secondary: #ff6b70;
+		--dark: #25283a;
+		--success: #3cc88f;
 		--success-light: #d1fae5;
-		--error: #ef4444;
+		--error: #ff6b70;
 		--error-light: #fef2f2;
 		--gray-50: #f9fafb;
 		--gray-100: #f3f4f6;
@@ -34,12 +35,17 @@
 	}
 
 	body {
-		font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+		font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+		background: #1a3a2a !important;
 	}
+	.page-content, .container, .web-footer, footer, nav.navbar, .navbar { background: transparent !important; }
+	.main-section { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+	.page-content { padding: 0 !important; }
+	.container { max-width: 100% !important; padding: 0 !important; }
 
 	.success-page {
 		min-height: 100vh;
-		background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+		background: linear-gradient(135deg, #1a3a2a 0%, #1e4d3a 50%, #25283a 100%);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -52,7 +58,7 @@
 	.bg-decoration {
 		position: absolute;
 		border-radius: 50%;
-		background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(236, 72, 153, 0.2));
+		background: linear-gradient(135deg, rgba(60, 200, 143, 0.15), rgba(255, 107, 112, 0.1));
 		animation: float 15s infinite ease-in-out;
 	}
 
@@ -105,7 +111,7 @@
 
 	.success-card {
 		background: white;
-		border-radius: 24px;
+		border-radius: 20px;
 		box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 		overflow: hidden;
 		animation: slideUp 0.6s ease-out;
@@ -126,7 +132,7 @@
 	.success-header {
 		padding: 48px 32px 32px;
 		text-align: center;
-		background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.1));
+		background: linear-gradient(135deg, rgba(60, 200, 143, 0.05), rgba(60, 200, 143, 0.1));
 		position: relative;
 	}
 
@@ -150,17 +156,17 @@
 	.success-icon-bg {
 		position: absolute;
 		inset: 0;
-		background: linear-gradient(135deg, var(--success), #059669);
+		background: linear-gradient(135deg, var(--primary), var(--primary-dark));
 		border-radius: 50%;
 		animation: successPulse 2s ease-in-out infinite;
 	}
 
 	@keyframes successPulse {
 		0%, 100% {
-			box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+			box-shadow: 0 0 0 0 rgba(60, 200, 143, 0.4);
 		}
 		50% {
-			box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+			box-shadow: 0 0 0 20px rgba(60, 200, 143, 0);
 		}
 	}
 
@@ -192,9 +198,10 @@
 	}
 
 	.success-title {
+		font-family: 'Yeseva One', cursive;
 		font-size: 2rem;
-		font-weight: 800;
-		color: var(--gray-900);
+		font-weight: 400;
+		color: var(--dark);
 		margin-bottom: 8px;
 		animation: fadeIn 0.5s ease 0.4s both;
 	}
@@ -252,7 +259,7 @@
 
 	.detail-value {
 		font-weight: 600;
-		color: var(--gray-900);
+		color: var(--dark);
 		font-size: 0.95rem;
 	}
 
@@ -277,8 +284,9 @@
 		align-items: center;
 		justify-content: center;
 		gap: 8px;
-		padding: 16px 24px;
-		border-radius: 12px;
+		padding: 15px 45px;
+		border-radius: 30px;
+		font-family: 'Open Sans', sans-serif;
 		font-size: 1rem;
 		font-weight: 600;
 		text-decoration: none;
@@ -288,13 +296,14 @@
 	}
 
 	.btn-primary {
-		background: linear-gradient(135deg, var(--primary), var(--secondary));
+		background: var(--primary);
 		color: white;
+		box-shadow: 2px 2px 0px var(--dark);
 	}
 
 	.btn-primary:hover {
 		transform: translateY(-2px);
-		box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+		box-shadow: 4px 4px 0px var(--dark);
 		color: white;
 		text-decoration: none;
 	}
@@ -302,12 +311,15 @@
 	.btn-secondary {
 		background: var(--gray-100);
 		color: var(--gray-700);
+		box-shadow: 2px 2px 0px var(--gray-300);
 	}
 
 	.btn-secondary:hover {
 		background: var(--gray-200);
 		color: var(--gray-800);
 		text-decoration: none;
+		transform: translateY(-2px);
+		box-shadow: 4px 4px 0px var(--gray-300);
 	}
 
 	.btn svg {
@@ -377,7 +389,7 @@
 	}
 
 	.share-btn.copy.copied {
-		background: var(--success);
+		background: var(--primary);
 		color: white;
 	}
 
@@ -388,7 +400,7 @@
 
 	/* Error State */
 	.error-header {
-		background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(239, 68, 68, 0.1));
+		background: linear-gradient(135deg, rgba(255, 107, 112, 0.05), rgba(255, 107, 112, 0.1));
 	}
 
 	.error-header::before {
@@ -396,7 +408,7 @@
 	}
 
 	.error-icon-bg {
-		background: linear-gradient(135deg, var(--error), #dc2626);
+		background: linear-gradient(135deg, var(--secondary), #e05055);
 		animation: none;
 	}
 
@@ -407,7 +419,7 @@
 		gap: 6px;
 		padding: 8px 16px;
 		background: var(--success-light);
-		color: var(--success);
+		color: var(--primary-dark);
 		border-radius: 100px;
 		font-size: 0.85rem;
 		font-weight: 600;
@@ -557,13 +569,13 @@
 			<div class="share-section">
 				<p class="share-title">Spread the word and inspire others</p>
 				<div class="share-buttons">
-					<a href="https://wa.me/?text=I%20just%20made%20a%20donation%20to%20TechNiti!%20Join%20me%20in%20making%20a%20difference.%20{{ request.host_url }}donate"
+					<a href="https://wa.me/?text=I%20just%20made%20a%20donation%20to%20WCWW!%20Join%20me%20in%20making%20a%20difference.%20{{ request.host_url }}donate"
 					   target="_blank" class="share-btn whatsapp" title="Share on WhatsApp">
 						<svg viewBox="0 0 24 24" fill="currentColor">
 							<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
 						</svg>
 					</a>
-					<a href="https://twitter.com/intent/tweet?text=I%20just%20donated%20to%20TechNiti!%20Join%20me%20in%20making%20a%20difference.&url={{ request.host_url }}donate"
+					<a href="https://twitter.com/intent/tweet?text=I%20just%20donated%20to%20WCWW!%20Join%20me%20in%20making%20a%20difference.&url={{ request.host_url }}donate"
 					   target="_blank" class="share-btn twitter" title="Share on Twitter">
 						<svg viewBox="0 0 24 24" fill="currentColor">
 							<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -643,7 +655,7 @@
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 
-	const colors = ['#7c3aed', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6'];
+	const colors = ['#3cc88f', '#ff6b70', '#25283a', '#f59e0b', '#3b82f6', '#2ba872'];
 	const confetti = [];
 
 	class ConfettiPiece {

@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class Donation(Document):
+class WebsiteDonation(Document):
 	def validate(self):
 		self.validate_amount()
 		self.set_donor_details()
@@ -15,16 +15,18 @@ class Donation(Document):
 			frappe.throw("Donation amount must be greater than 0")
 
 		if self.campaign:
-			campaign = frappe.get_doc("Donation Campaign", self.campaign)
+			campaign = frappe.get_doc("Website Donation Campaign", self.campaign)
 			if campaign.minimum_amount and self.amount < campaign.minimum_amount:
 				frappe.throw(f"Minimum donation amount is {campaign.minimum_amount}")
 
 	def set_donor_details(self):
 		if self.donor:
-			donor = frappe.get_doc("Donor", self.donor)
+			donor = frappe.get_doc("Website Donor", self.donor)
 			self.donor_name = donor.full_name
 			self.donor_email = donor.email
 			self.donor_mobile = donor.mobile
+			self.donor_id_type = donor.id_type
+			self.donor_id_number = donor.id_number
 
 	def on_submit(self):
 		self.update_donor_stats()
@@ -36,13 +38,13 @@ class Donation(Document):
 
 	def update_donor_stats(self):
 		if self.donor:
-			donor = frappe.get_doc("Donor", self.donor)
+			donor = frappe.get_doc("Website Donor", self.donor)
 			donor.update_donation_stats()
 			donor.save(ignore_permissions=True)
 
 	def update_campaign_stats(self):
 		if self.campaign:
-			campaign = frappe.get_doc("Donation Campaign", self.campaign)
+			campaign = frappe.get_doc("Website Donation Campaign", self.campaign)
 			campaign.update_collection_stats()
 			campaign.save(ignore_permissions=True)
 

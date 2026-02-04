@@ -16,6 +16,7 @@
   "description",
   "campaign_image",
   "section_break_goals",
+  "is_campaign",
   "target_amount",
   "column_break_2",
   "collected_amount",
@@ -83,10 +84,17 @@
    "label": "Goals & Progress"
   },
   {
+   "fieldname": "is_campaign",
+   "fieldtype": "Check",
+   "label": "Is this a Campaign?",
+   "description": "Enable this to set a target amount and track progress. Leave unchecked for general donation pages."
+  },
+  {
    "fieldname": "target_amount",
    "fieldtype": "Currency",
    "label": "Target Amount",
-   "reqd": 1
+   "depends_on": "is_campaign",
+   "mandatory_depends_on": "is_campaign"
   },
   {
    "fieldname": "column_break_2",
@@ -152,7 +160,7 @@
  "modified": "2024-01-17 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Techniti",
- "name": "Donation Campaign",
+ "name": "Website Donation Campaign",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [

@@ -138,7 +138,7 @@ app_license = "mit"
 # Hook on document methods and events
 
 doc_events = {
-	"Donation": {
+	"Website Donation": {
 		"on_submit": "techniti.api.update_stats_on_donation",
 		"on_cancel": "techniti.api.update_stats_on_donation"
 	}
@@ -208,13 +208,13 @@ doc_events = {
 
 user_data_fields = [
 	{
-		"doctype": "Donor",
+		"doctype": "Website Donor",
 		"filter_by": "email",
-		"redact_fields": ["full_name", "mobile", "pan_number", "address"],
+		"redact_fields": ["full_name", "mobile", "id_number"],
 		"partial": 1,
 	},
 	{
-		"doctype": "Donation",
+		"doctype": "Website Donation",
 		"filter_by": "donor_email",
 		"redact_fields": ["donor_name", "donor_mobile", "message"],
 		"partial": 1,

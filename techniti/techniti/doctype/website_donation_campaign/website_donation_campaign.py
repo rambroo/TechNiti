@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class DonationCampaign(Document):
+class WebsiteDonationCampaign(Document):
 	def validate(self):
 		self.validate_dates()
 		self.validate_default_campaign()
@@ -18,7 +18,7 @@ class DonationCampaign(Document):
 		if self.is_default:
 			# Unset other default campaigns
 			frappe.db.sql("""
-				UPDATE `tabDonation Campaign`
+				UPDATE `tabWebsite Donation Campaign`
 				SET is_default = 0
 				WHERE name != %s AND is_default = 1
 			""", self.name)
@@ -32,7 +32,7 @@ class DonationCampaign(Document):
 			SELECT
 				COALESCE(SUM(amount), 0) as total,
 				COUNT(DISTINCT donor) as donors
-			FROM `tabDonation`
+			FROM `tabWebsite Donation`
 			WHERE campaign = %s AND payment_status = 'Paid'
 		""", self.name, as_dict=True)
 
@@ -44,7 +44,7 @@ class DonationCampaign(Document):
 	def get_active_campaigns():
 		"""Get all active campaigns for website"""
 		return frappe.get_all(
-			"Donation Campaign",
+			"Website Donation Campaign",
 			filters={
 				"status": "Active",
 				"show_on_website": 1

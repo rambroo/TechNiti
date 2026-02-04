@@ -11,6 +11,8 @@
   "donor_name",
   "donor_email",
   "donor_mobile",
+  "donor_id_type",
+  "donor_id_number",
   "column_break_1",
   "campaign",
   "amount",
@@ -26,6 +28,7 @@
   "section_break_additional",
   "message",
   "is_anonymous",
+  "is_club_donation",
   "amended_from"
  ],
  "fields": [
@@ -33,7 +36,7 @@
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Naming Series",
-   "options": "DON-.YYYY.-.#####",
+   "options": "WDON-.YYYY.-.#####",
    "reqd": 1
   },
   {
@@ -42,7 +45,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Donor",
-   "options": "Donor"
+   "options": "Website Donor"
   },
   {
    "fetch_from": "donor.full_name",
@@ -67,6 +70,20 @@
    "read_only": 1
   },
   {
+   "fetch_from": "donor.id_type",
+   "fieldname": "donor_id_type",
+   "fieldtype": "Data",
+   "label": "Donor ID Type",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "donor.id_number",
+   "fieldname": "donor_id_number",
+   "fieldtype": "Data",
+   "label": "Donor ID Number",
+   "read_only": 1
+  },
+  {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"
   },
@@ -76,7 +93,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Campaign",
-   "options": "Donation Campaign"
+   "options": "Website Donation Campaign"
   },
   {
    "fieldname": "amount",
@@ -158,11 +175,16 @@
    "label": "Anonymous Donation"
   },
   {
+   "fieldname": "is_club_donation",
+   "fieldtype": "Check",
+   "label": "Club Donation / Subscription"
+  },
+  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "Donation",
+   "options": "Website Donation",
    "print_hide": 1,
    "read_only": 1
   }
@@ -173,7 +195,7 @@
  "modified": "2024-01-17 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Techniti",
- "name": "Donation",
+ "name": "Website Donation",
  "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [

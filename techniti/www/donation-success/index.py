@@ -13,7 +13,7 @@ def get_context(context):
 
 	if donation_id:
 		try:
-			donation = frappe.get_doc("Donation", donation_id)
+			donation = frappe.get_doc("Website Donation", donation_id)
 			context.donation = donation
 			context.success = donation.payment_status == "Paid"
 		except frappe.DoesNotExistError:

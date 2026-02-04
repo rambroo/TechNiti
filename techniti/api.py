@@ -14,9 +14,9 @@ RAZORPAY_API_URL = "https://api.razorpay.com/v1"
 
 def get_razorpay_credentials():
 	"""Get Razorpay credentials from settings"""
-	settings = frappe.get_single("Techniti Settings")
+	settings = frappe.get_single("Website Donation Settings")
 	if not settings.razorpay_key_id or not settings.razorpay_key_secret:
-		frappe.throw(_("Razorpay credentials not configured. Please configure in Techniti Settings."))
+		frappe.throw(_("Razorpay credentials not configured. Please configure in Website Donation Settings."))
 
 	return {
 		"key_id": settings.razorpay_key_id,
@@ -27,16 +27,22 @@ def get_razorpay_credentials():
 
 @frappe.whitelist(allow_guest=True)
 def create_donation_order(amount, campaign=None, full_name=None, email=None,
-						  mobile=None, pan_number=None, message=None, is_anonymous=False):
+						  mobile=None, id_type=None, id_number=None, message=None,
+						  is_anonymous=False, is_club_donation=False):
 	"""Create a donation order and Razorpay order"""
 	try:
 		amount = float(amount)
 		if amount <= 0:
 			frappe.throw(_("Amount must be greater than 0"))
 
+		# Club Donation requires email
+		is_club_donation = frappe.parse_json(is_club_donation) if isinstance(is_club_donation, str) else is_club_donation
+		if is_club_donation and not email:
+			frappe.throw(_("Email is required for Club Donation / Subscription"))
+
 		# Validate campaign minimum amount
 		if campaign:
-			campaign_doc = frappe.get_doc("Donation Campaign", campaign)
+			campaign_doc = frappe.get_doc("Website Donation Campaign", campaign)
 			if campaign_doc.minimum_amount and amount < campaign_doc.minimum_amount:
 				frappe.throw(_("Minimum donation amount is {0}").format(campaign_doc.minimum_amount))
 
@@ -44,27 +50,33 @@ def create_donation_order(amount, campaign=None, full_name=None, email=None,
 
 		# Create or get donor
 		donor = None
-		if email:
-			existing_donor = frappe.db.get_value("Donor", {"email": email}, "name")
+		if full_name and id_type and id_number:
+			# Try to find existing donor by id_type + id_number
+			existing_donor = frappe.db.get_value(
+				"Website Donor",
+				{"id_type": id_type, "id_number": id_number},
+				"name"
+			)
 			if existing_donor:
 				donor = existing_donor
 				# Update donor details
-				donor_doc = frappe.get_doc("Donor", donor)
+				donor_doc = frappe.get_doc("Website Donor", donor)
 				if full_name and donor_doc.full_name != full_name:
 					donor_doc.full_name = full_name
+				if email and donor_doc.email != email:
+					donor_doc.email = email
 				if mobile and donor_doc.mobile != mobile:
 					donor_doc.mobile = mobile
-				if pan_number and donor_doc.pan_number != pan_number:
-					donor_doc.pan_number = pan_number
 				donor_doc.save(ignore_permissions=True)
 			else:
 				# Create new donor
 				donor_doc = frappe.get_doc({
-					"doctype": "Donor",
+					"doctype": "Website Donor",
 					"full_name": full_name,
+					"id_type": id_type,
+					"id_number": id_number,
 					"email": email,
-					"mobile": mobile,
-					"pan_number": pan_number
+					"mobile": mobile
 				})
 				donor_doc.insert(ignore_permissions=True)
 				donor = donor_doc.name
@@ -95,15 +107,18 @@ def create_donation_order(amount, campaign=None, full_name=None, email=None,
 
 		# Create donation record
 		donation = frappe.get_doc({
-			"doctype": "Donation",
+			"doctype": "Website Donation",
 			"donor": donor,
 			"donor_name": full_name,
 			"donor_email": email,
 			"donor_mobile": mobile,
+			"donor_id_type": id_type,
+			"donor_id_number": id_number,
 			"campaign": campaign,
 			"amount": amount,
 			"message": message,
 			"is_anonymous": is_anonymous,
+			"is_club_donation": 1 if is_club_donation else 0,
 			"razorpay_order_id": razorpay_order["id"],
 			"payment_status": "Pending"
 		})
@@ -153,7 +168,7 @@ def verify_donation_payment(donation_id, razorpay_payment_id, razorpay_order_id,
 			payment_method = payment_data.get("method", "").upper()
 
 		# Update donation
-		donation = frappe.get_doc("Donation", donation_id)
+		donation = frappe.get_doc("Website Donation", donation_id)
 		donation.on_payment_success(
 			payment_id=razorpay_payment_id,
 			order_id=razorpay_order_id,
@@ -173,7 +188,7 @@ def verify_donation_payment(donation_id, razorpay_payment_id, razorpay_order_id,
 		frappe.log_error(frappe.get_traceback(), "Payment Verification Error")
 		# Mark donation as failed
 		try:
-			donation = frappe.get_doc("Donation", donation_id)
+			donation = frappe.get_doc("Website Donation", donation_id)
 			donation.on_payment_failure()
 		except Exception:
 			pass
@@ -210,13 +225,13 @@ def razorpay_webhook():
 
 			# Find donation by order ID
 			donation_name = frappe.db.get_value(
-				"Donation",
+				"Website Donation",
 				{"razorpay_order_id": order_id},
 				"name"
 			)
 
 			if donation_name:
-				donation = frappe.get_doc("Donation", donation_name)
+				donation = frappe.get_doc("Website Donation", donation_name)
 				if donation.payment_status != "Paid":
 					donation.razorpay_payment_id = payment.get("id")
 					donation.payment_method = (payment.get("method") or "").upper()
@@ -233,13 +248,13 @@ def razorpay_webhook():
 			order_id = payment.get("order_id")
 
 			donation_name = frappe.db.get_value(
-				"Donation",
+				"Website Donation",
 				{"razorpay_order_id": order_id},
 				"name"
 			)
 
 			if donation_name:
-				donation = frappe.get_doc("Donation", donation_name)
+				donation = frappe.get_doc("Website Donation", donation_name)
 				if donation.payment_status == "Pending":
 					donation.payment_status = "Failed"
 					donation.save(ignore_permissions=True)
@@ -255,11 +270,11 @@ def razorpay_webhook():
 def send_donation_receipt(donation_name):
 	"""Send donation receipt email"""
 	try:
-		settings = frappe.get_single("Techniti Settings")
+		settings = frappe.get_single("Website Donation Settings")
 		if not settings.send_donation_receipt:
 			return
 
-		donation = frappe.get_doc("Donation", donation_name)
+		donation = frappe.get_doc("Website Donation", donation_name)
 		if not donation.donor_email:
 			return
 
@@ -308,7 +323,7 @@ def get_donation_stats():
 			COUNT(*) as total_donations,
 			COALESCE(SUM(amount), 0) as total_amount,
 			COUNT(DISTINCT donor) as total_donors
-		FROM `tabDonation`
+		FROM `tabWebsite Donation`
 		WHERE payment_status = 'Paid' AND docstatus = 1
 	""", as_dict=True)[0]
 
@@ -319,7 +334,7 @@ def get_donation_stats():
 def get_recent_donations(limit=10):
 	"""Get recent donations"""
 	donations = frappe.get_all(
-		"Donation",
+		"Website Donation",
 		filters={"payment_status": "Paid", "docstatus": 1},
 		fields=["name", "donor_name", "amount", "campaign", "donation_date", "is_anonymous"],
 		order_by="donation_date desc",
@@ -337,7 +352,7 @@ def update_stats_on_donation(doc, method):
 	"""Update donor and campaign stats when donation is submitted/cancelled"""
 	if doc.donor:
 		try:
-			donor = frappe.get_doc("Donor", doc.donor)
+			donor = frappe.get_doc("Website Donor", doc.donor)
 			donor.update_donation_stats()
 			donor.save(ignore_permissions=True)
 		except Exception:
@@ -345,7 +360,7 @@ def update_stats_on_donation(doc, method):
 
 	if doc.campaign:
 		try:
-			campaign = frappe.get_doc("Donation Campaign", doc.campaign)
+			campaign = frappe.get_doc("Website Donation Campaign", doc.campaign)
 			campaign.update_collection_stats()
 			campaign.save(ignore_permissions=True)
 		except Exception:

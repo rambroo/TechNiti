@@ -5,13 +5,13 @@ import frappe
 from frappe.model.document import Document
 
 
-class TechnitiSettings(Document):
+class WebsiteDonationSettings(Document):
 	pass
 
 
 def get_razorpay_credentials():
 	"""Get Razorpay credentials from settings"""
-	settings = frappe.get_single("Techniti Settings")
+	settings = frappe.get_single("Website Donation Settings")
 	return {
 		"key_id": settings.razorpay_key_id,
 		"key_secret": settings.get_password("razorpay_key_secret"),
