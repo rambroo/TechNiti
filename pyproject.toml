@@ -1,9 +1,9 @@
 [project]
-name = "techniti"
+name = "erpnext_enhancements"
 authors = [
-    { name = "Rohan Rambhiya", email = "websitecreateionbyrohan@gmail.com"}
+    { name = "Rohan", email = "rohan@micronxt.com"}
 ]
-description = "Donation Software"
+description = "Used for common features in Clients"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
