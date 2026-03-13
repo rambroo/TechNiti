@@ -43,7 +43,7 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {"Website Donor": "public/js/website_donor.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -141,29 +141,23 @@ doc_events = {
 	"Website Donation": {
 		"on_submit": "techniti.api.update_stats_on_donation",
 		"on_cancel": "techniti.api.update_stats_on_donation"
+	},
+	"Website Donation Subscription": {
+		"after_save": "techniti.api.update_website_expired_subscriptions"
 	}
 }
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"techniti.tasks.all"
-# 	],
-# 	"daily": [
-# 		"techniti.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"techniti.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"techniti.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"techniti.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"daily": [
+		"techniti.api.check_website_subscription_status",
+		"techniti.api.update_website_expired_subscriptions",
+		"techniti.api.update_website_donor_categories",
+		"techniti.api.update_website_donor_status",
+	]
+}
 
 # Testing
 # -------
@@ -239,6 +233,8 @@ user_data_fields = [
 website_route_rules = [
 	{"from_route": "/donate", "to_route": "donate"},
 	{"from_route": "/donation-success", "to_route": "donation-success"},
+	{"from_route": "/donor-login", "to_route": "donor-login"},
+	{"from_route": "/donor-portal", "to_route": "donor-portal"},
 ]
 
 # Webhook endpoint for Razorpay

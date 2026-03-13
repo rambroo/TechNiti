@@ -1,0 +1,675 @@
+{% extends "templates/web.html" %}
+
+{% block head_include %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { background: #f0f6f3 !important; font-family: 'Open Sans', sans-serif; }
+.page-content, .main-section { background: transparent !important; padding: 0 !important; }
+.container { max-width: 100% !important; padding: 0 !important; background: transparent !important; }
+nav.navbar { background: #25283a !important; }
+.web-footer, footer { background: #25283a !important; }
+
+:root {
+	--primary: #3cc88f;
+	--primary-dark: #2ba872;
+	--secondary: #ff6b70;
+	--dark: #25283a;
+	--light: #f7f7f7;
+}
+
+* { box-sizing: border-box; }
+
+/* ── Header ── */
+.portal-header {
+	background: linear-gradient(135deg, #1a3a2a 0%, #1e4d3a 50%, #25283a 100%);
+	padding: 40px 24px 60px;
+	color: #fff;
+}
+
+.portal-header-inner {
+	max-width: 1100px;
+	margin: 0 auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+
+.portal-greeting h1 {
+	font-family: 'Yeseva One', cursive;
+	font-size: 32px;
+	margin-bottom: 4px;
+}
+
+.portal-greeting p { color: rgba(255,255,255,0.7); font-size: 15px; }
+
+.donor-badge {
+	background: rgba(60,200,143,0.2);
+	border: 1px solid rgba(60,200,143,0.4);
+	border-radius: 30px;
+	padding: 6px 18px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #3cc88f;
+	display: inline-block;
+	margin-top: 8px;
+}
+
+.header-actions { display: flex; gap: 12px; align-items: center; }
+
+.btn-outline-light {
+	background: transparent;
+	border: 2px solid rgba(255,255,255,0.4);
+	color: #fff;
+	padding: 10px 22px;
+	border-radius: 30px;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: none;
+	transition: all 0.2s;
+}
+
+.btn-outline-light:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.7); }
+
+.btn-primary-sm {
+	background: var(--primary);
+	color: #fff;
+	padding: 10px 22px;
+	border: none;
+	border-radius: 30px;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 14px;
+	font-weight: 700;
+	cursor: pointer;
+	text-decoration: none;
+	box-shadow: 2px 2px 0px var(--dark);
+	transition: background 0.2s;
+}
+
+.btn-primary-sm:hover { background: var(--primary-dark); }
+
+/* ── Body ── */
+.portal-body {
+	max-width: 1100px;
+	margin: -36px auto 0;
+	padding: 0 24px 60px;
+}
+
+/* ── Stats ── */
+.stats-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+	margin-bottom: 32px;
+}
+
+.stat-card {
+	background: #fff;
+	border-radius: 16px;
+	padding: 24px;
+	box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+	text-align: center;
+}
+
+.stat-value {
+	font-family: 'Yeseva One', cursive;
+	font-size: 30px;
+	color: var(--primary);
+	line-height: 1;
+	margin-bottom: 4px;
+}
+
+.stat-label { font-size: 13px; color: #888; font-weight: 600; }
+.stat-card.alert-card .stat-value { color: var(--secondary); }
+
+/* ── Section cards ── */
+.section-card {
+	background: #fff;
+	border-radius: 20px;
+	box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+	padding: 28px;
+	margin-bottom: 24px;
+}
+
+.section-title {
+	font-family: 'Yeseva One', cursive;
+	font-size: 20px;
+	color: var(--dark);
+	margin-bottom: 20px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.section-title .badge {
+	background: var(--primary);
+	color: #fff;
+	font-size: 12px;
+	font-family: 'Open Sans', sans-serif;
+	font-weight: 700;
+	padding: 3px 10px;
+	border-radius: 20px;
+}
+
+.section-title .badge.warning { background: var(--secondary); }
+
+/* ── Tables ── */
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.data-table th {
+	text-align: left;
+	padding: 10px 14px;
+	font-weight: 700;
+	color: #666;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	border-bottom: 2px solid #f0f0f0;
+}
+.data-table td { padding: 12px 14px; border-bottom: 1px solid #f5f5f5; color: var(--dark); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: #fafffe; }
+
+/* ── Status badges ── */
+.status-badge {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: 700;
+}
+.badge-captured, .badge-active, .badge-on-processing { background: #e8f8f2; color: #1a7a50; }
+.badge-pending { background: #fff8e8; color: #a07800; }
+.badge-failed, .badge-expired { background: #fff0f0; color: #c0392b; }
+.badge-expiring { background: #fff3e0; color: #c05000; }
+
+/* ── Pending alert ── */
+.pending-alert {
+	background: linear-gradient(135deg, #fff0f1 0%, #fff5f0 100%);
+	border: 1px solid #ffc9cb;
+	border-radius: 14px;
+	padding: 20px;
+	margin-bottom: 12px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+.pending-alert-info h4 { font-weight: 700; color: var(--dark); margin-bottom: 4px; font-size: 15px; }
+.pending-alert-info p { color: #888; font-size: 13px; }
+.pending-amount { font-family: 'Yeseva One', cursive; font-size: 24px; color: var(--secondary); }
+
+/* ── Club cause card ── */
+.club-cause-card {
+	border: 1.5px solid #e8f8f2;
+	border-radius: 14px;
+	padding: 18px 20px;
+	margin-bottom: 12px;
+	background: #fafffe;
+}
+.club-cause-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 6px;
+}
+.club-cause-name { font-weight: 700; font-size: 15px; color: var(--dark); }
+.club-cause-monthly { font-family: 'Yeseva One', cursive; font-size: 20px; color: var(--primary); }
+.club-cause-meta { font-size: 12px; color: #888; }
+
+/* ── Subscription row ── */
+.sub-row { cursor: pointer; }
+.sub-row td { padding: 14px 14px; }
+.sub-expand-btn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: var(--primary);
+	font-size: 18px;
+	line-height: 1;
+	padding: 0;
+	transition: transform 0.2s;
+}
+.sub-expand-btn.open { transform: rotate(90deg); }
+
+.sub-details-row { display: none; }
+.sub-details-row.open { display: table-row; }
+.sub-details-inner {
+	padding: 0 14px 16px;
+	background: #f9fffe;
+}
+.sub-months-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 10px;
+}
+.sub-month-chip {
+	padding: 6px 14px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: 600;
+	background: #e8f8f2;
+	color: #1a7a50;
+}
+.sub-month-chip.past { background: #f3f4f6; color: #9ca3af; }
+.sub-month-chip.future { background: #fff8e8; color: #a07800; }
+
+/* ── Profile grid ── */
+.profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.profile-field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #aaa; font-weight: 700; margin-bottom: 4px; }
+.profile-field .value { font-size: 15px; color: var(--dark); font-weight: 600; }
+
+/* ── Empty state ── */
+.empty-state { text-align: center; padding: 32px 0; color: #bbb; font-size: 14px; }
+.empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+
+/* ── Loading ── */
+.portal-loading { text-align: center; padding: 80px 0; color: #aaa; font-size: 16px; }
+.spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(60,200,143,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Tabs ── */
+.tab-nav { display: flex; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+.tab-btn {
+	background: #fff;
+	border: 2px solid #e8e8e8;
+	color: #666;
+	padding: 10px 22px;
+	border-radius: 30px;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+.tab-btn:hover { border-color: var(--primary); color: var(--primary); }
+.tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 2px 2px 0px var(--dark); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+	.portal-header { padding: 28px 16px 50px; }
+	.portal-body { padding: 0 12px 40px; }
+	.portal-greeting h1 { font-size: 24px; }
+	.section-card { padding: 18px; }
+	.data-table { font-size: 13px; }
+	.data-table th, .data-table td { padding: 8px 10px; }
+	.pending-alert { flex-direction: column; }
+}
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div id="portal-loading" class="portal-loading">
+	<div><div class="spinner"></div></div>
+	<div>Loading your portal...</div>
+</div>
+
+<div id="portal-main" style="display:none;">
+	<div class="portal-header">
+		<div class="portal-header-inner">
+			<div class="portal-greeting">
+				<h1 id="greeting-name">Welcome!</h1>
+				<p>Your personal donor dashboard</p>
+				<div id="donor-badge-container"></div>
+			</div>
+			<div class="header-actions">
+				<a href="/donate" class="btn-primary-sm">+ Donate Now</a>
+				<button class="btn-outline-light" onclick="confirmLogout()">Logout</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="portal-body">
+		<!-- Stats Row -->
+		<div class="stats-row" id="stats-row">
+			<div class="stat-card">
+				<div class="stat-value" id="stat-total">₹0</div>
+				<div class="stat-label">Total Donated</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-value" id="stat-count">0</div>
+				<div class="stat-label">Donations Made</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-value" id="stat-last">—</div>
+				<div class="stat-label">Last Donation</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-value" id="stat-category">—</div>
+				<div class="stat-label">Donor Category</div>
+			</div>
+		</div>
+
+		<!-- Tab Nav -->
+		<div class="tab-nav">
+			<button class="tab-btn active" onclick="showTab('tab-history', this)">Donation History</button>
+			<button class="tab-btn" onclick="showTab('tab-club', this)">Club &amp; Subscriptions</button>
+			<button class="tab-btn" onclick="showTab('tab-profile', this)">My Profile</button>
+		</div>
+
+		<!-- Tab: Donation History -->
+		<div class="tab-content active" id="tab-history">
+			<div class="section-card">
+				<div class="section-title">Donation History</div>
+				<div id="donations-content"></div>
+			</div>
+		</div>
+
+		<!-- Tab: Club & Subscriptions -->
+		<div class="tab-content" id="tab-club">
+			<!-- Pending dues alert -->
+			<div id="pending-section" style="display:none;">
+				<div class="section-card">
+					<div class="section-title">
+						Pending Dues <span class="badge warning" id="pending-count-badge">0</span>
+					</div>
+					<div id="pending-list"></div>
+					<div style="text-align:center;margin-top:16px;">
+						<a href="/donate" class="btn-primary-sm">Pay Pending Dues</a>
+					</div>
+				</div>
+			</div>
+
+			<!-- Club memberships -->
+			<div class="section-card">
+				<div class="section-title">My Club Memberships</div>
+				<div id="clubs-content"></div>
+			</div>
+
+			<!-- All subscriptions -->
+			<div class="section-card">
+				<div class="section-title">Subscription History</div>
+				<div id="subscriptions-content"></div>
+			</div>
+		</div>
+
+		<!-- Tab: Profile -->
+		<div class="tab-content" id="tab-profile">
+			<div class="section-card">
+				<div class="section-title">My Profile</div>
+				<div id="profile-content"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+function showTab(tabId, btn) {
+	document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+	document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+	document.getElementById(tabId).classList.add('active');
+	btn.classList.add('active');
+}
+
+function formatCurrency(amount) {
+	if (!amount && amount !== 0) return '₹0';
+	return '₹' + parseFloat(amount).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+}
+
+function formatDate(dateStr) {
+	if (!dateStr) return '—';
+	const d = new Date(dateStr);
+	return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function formatMonthYear(dateStr) {
+	if (!dateStr) return '—';
+	const d = new Date(dateStr);
+	return d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+}
+
+function statusBadgeClass(status) {
+	const map = {
+		'Captured': 'badge-captured',
+		'Pending': 'badge-pending',
+		'Failed': 'badge-failed',
+		'On Processing': 'badge-on-processing',
+		'Expiring Soon': 'badge-expiring',
+		'Expired': 'badge-expired',
+		'Active': 'badge-active'
+	};
+	return map[status] || 'badge-pending';
+}
+
+function confirmLogout() {
+	if (confirm('Are you sure you want to logout?')) {
+		frappe.call({
+			method: 'techniti.api.donor_logout',
+			callback: function() { window.location.href = '/donor-login'; },
+			error: function() { window.location.href = '/donor-login'; }
+		});
+	}
+}
+
+async function loadPortalData() {
+	try {
+		const res = await frappe.call({ method: 'techniti.api.get_donor_portal_data' });
+		const data = res.message;
+		if (!data) throw new Error('No data');
+		renderPortal(data);
+		document.getElementById('portal-loading').style.display = 'none';
+		document.getElementById('portal-main').style.display = 'block';
+	} catch (err) {
+		document.getElementById('portal-loading').innerHTML =
+			'<p style="color:#c0392b;">Failed to load portal. Please <a href="/donor-login">login again</a>.</p>';
+	}
+}
+
+function renderPortal(data) {
+	const donor = data.donor;
+
+	// Greeting
+	const firstName = donor.full_name ? donor.full_name.split(' ')[0] : 'Donor';
+	document.getElementById('greeting-name').textContent = `Welcome, ${firstName}!`;
+
+	// Badges
+	if (donor.donor_category && donor.donor_category !== 'Inactive') {
+		const colors = { 'Bronze': '#cd7f32', 'Silver': '#a0a0a0', 'Gold': '#d4af37', 'Diamond': '#6cb4e4', 'Platinum': '#7a7a7a' };
+		const color = colors[donor.donor_category] || 'var(--primary)';
+		document.getElementById('donor-badge-container').innerHTML =
+			`<span class="donor-badge" style="color:${color};border-color:${color};background:rgba(60,200,143,0.1);">${donor.donor_category} Donor</span>`;
+	}
+	if (donor.is_club_donor) {
+		document.getElementById('donor-badge-container').innerHTML +=
+			`<span class="donor-badge" style="margin-left:8px;">Club Member</span>`;
+	}
+
+	// Stats
+	document.getElementById('stat-total').textContent = formatCurrency(donor.total_donated);
+	document.getElementById('stat-count').textContent = donor.donation_count || 0;
+	document.getElementById('stat-last').textContent = formatDate(donor.last_donation_date);
+	document.getElementById('stat-category').textContent = donor.donor_category || '—';
+
+	// ── DONATION HISTORY ─────────────────────────────────────────
+	const donations = data.donations || [];
+	if (donations.length === 0) {
+		document.getElementById('donations-content').innerHTML =
+			'<div class="empty-state"><div class="icon">💳</div>No donations yet. <a href="/donate" style="color:var(--primary);font-weight:600;">Make your first donation →</a></div>';
+	} else {
+		document.getElementById('donations-content').innerHTML = `
+			<div style="overflow-x:auto;">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th>Date</th>
+							<th>Cause / Campaign</th>
+							<th>Type</th>
+							<th>Amount</th>
+							<th>Status</th>
+							<th>Receipt</th>
+						</tr>
+					</thead>
+					<tbody>
+						${donations.map(d => `
+							<tr>
+								<td>${formatDate(d.donation_date)}</td>
+								<td>${d.cause || d.campaign || '—'}</td>
+								<td><span style="font-size:11px;padding:3px 8px;border-radius:10px;background:${d.is_club_donation ? 'rgba(60,200,143,0.1)' : '#f3f4f6'};color:${d.is_club_donation ? '#1a7a50' : '#6b7280'};font-weight:600;">${d.is_club_donation ? 'Club' : 'One-Time'}</span></td>
+								<td><strong>${formatCurrency(d.amount)}</strong></td>
+								<td><span class="status-badge ${statusBadgeClass(d.payment_status)}">${d.payment_status}</span></td>
+								<td>${d.sent_receipt ? '<span style="color:var(--primary);font-weight:600;">✓ Sent</span>' : '<span style="color:#ccc;">—</span>'}</td>
+							</tr>
+						`).join('')}
+					</tbody>
+				</table>
+			</div>
+		`;
+	}
+
+	// ── PENDING DUES ─────────────────────────────────────────────
+	const expired = data.expired_subscriptions || [];
+	if (expired.length > 0) {
+		document.getElementById('pending-section').style.display = 'block';
+		document.getElementById('pending-count-badge').textContent = expired.length;
+		document.getElementById('pending-list').innerHTML = expired.map(exp => `
+			<div class="pending-alert">
+				<div class="pending-alert-info">
+					<h4>${exp.cause || 'General'} Subscription</h4>
+					<p>${exp.months_left} month${exp.months_left !== 1 ? 's' : ''} pending since ${exp.donation_left_month}</p>
+				</div>
+				<div class="pending-amount">${formatCurrency(exp.total_amount)}</div>
+			</div>
+		`).join('');
+	}
+
+	// ── CLUB MEMBERSHIPS ─────────────────────────────────────────
+	const clubs = data.clubs || [];
+	if (clubs.length === 0) {
+		document.getElementById('clubs-content').innerHTML =
+			'<div class="empty-state"><div class="icon">🔄</div>No club memberships yet. <a href="/donate" style="color:var(--primary);font-weight:600;">Start a club subscription →</a></div>';
+	} else {
+		document.getElementById('clubs-content').innerHTML = clubs.map(c => `
+			<div class="club-cause-card">
+				<div class="club-cause-header">
+					<span class="club-cause-name">${c.cause}</span>
+					<span class="club-cause-monthly">${formatCurrency(c.monthly_club_amount)}<span style="font-size:13px;font-family:'Open Sans',sans-serif;color:#888;font-weight:400;">/month</span></span>
+				</div>
+				<div class="club-cause-meta">
+					Status: <span class="status-badge ${statusBadgeClass(c.status)}" style="font-size:11px;">${c.status}</span>
+					${c.pending_months > 0 ? `&nbsp;·&nbsp;<span style="color:var(--secondary);font-weight:600;">${c.pending_months} month${c.pending_months > 1 ? 's' : ''} pending (${formatCurrency(c.pending_amount)})</span>` : ''}
+					${c.last_donation_date ? `&nbsp;·&nbsp;Last: ${formatDate(c.last_donation_date)}` : ''}
+				</div>
+			</div>
+		`).join('');
+	}
+
+	// ── SUBSCRIPTION HISTORY (all) ────────────────────────────────
+	const allSubs = data.all_subscriptions || [];
+	if (allSubs.length === 0) {
+		document.getElementById('subscriptions-content').innerHTML =
+			'<div class="empty-state"><div class="icon">📋</div>No subscriptions found.</div>';
+	} else {
+		const today = new Date();
+		let rows = '';
+		allSubs.forEach((s, idx) => {
+			const hasDetails = s.details && s.details.length > 0;
+			rows += `
+				<tr class="sub-row" onclick="toggleSubDetails(${idx})">
+					<td>
+						${hasDetails ? `<button class="sub-expand-btn" id="expand-btn-${idx}">›</button>` : ''}
+					</td>
+					<td><strong>${s.cause || '—'}</strong></td>
+					<td>${formatDate(s.from_date)}</td>
+					<td>${formatDate(s.to_date)}</td>
+					<td>${s.number_of_months || '—'} months</td>
+					<td>${formatCurrency(s.cost)}/mo</td>
+					<td>${formatCurrency(s.total_amount)}</td>
+					<td><span class="status-badge ${statusBadgeClass(s.status)}">${s.status}</span></td>
+				</tr>
+			`;
+			if (hasDetails) {
+				const chips = s.details.map(d => {
+					const dDate = new Date(d.donation_date);
+					const isPast = dDate < today;
+					const chipClass = isPast ? 'past' : 'future';
+					return `<span class="sub-month-chip ${chipClass}">${formatMonthYear(d.donation_date)}</span>`;
+				}).join('');
+				rows += `
+					<tr class="sub-details-row" id="sub-details-${idx}">
+						<td colspan="8">
+							<div class="sub-details-inner">
+								<div style="font-size:12px;color:#888;margin-bottom:6px;font-weight:600;">MONTHLY BREAKDOWN</div>
+								<div class="sub-months-grid">${chips}</div>
+							</div>
+						</td>
+					</tr>
+				`;
+			}
+		});
+
+		document.getElementById('subscriptions-content').innerHTML = `
+			<div style="overflow-x:auto;">
+				<table class="data-table">
+					<thead>
+						<tr>
+							<th></th>
+							<th>Cause</th>
+							<th>From</th>
+							<th>To</th>
+							<th>Duration</th>
+							<th>Monthly</th>
+							<th>Total</th>
+							<th>Status</th>
+						</tr>
+					</thead>
+					<tbody>${rows}</tbody>
+				</table>
+			</div>
+			<p style="font-size:12px;color:#aaa;margin-top:8px;">Click a row to see month-by-month breakdown</p>
+		`;
+	}
+
+	// ── PROFILE ──────────────────────────────────────────────────
+	document.getElementById('profile-content').innerHTML = `
+		<div class="profile-grid">
+			<div class="profile-field">
+				<label>Full Name</label>
+				<div class="value">${donor.full_name || '—'}</div>
+			</div>
+			<div class="profile-field">
+				<label>Email</label>
+				<div class="value">${donor.email || '—'}</div>
+			</div>
+			<div class="profile-field">
+				<label>Mobile</label>
+				<div class="value">${donor.mobile || '—'}</div>
+			</div>
+			${donor.id_type && donor.id_number ? `
+			<div class="profile-field">
+				<label>${donor.id_type}</label>
+				<div class="value">${donor.id_number}</div>
+			</div>` : ''}
+			<div class="profile-field">
+				<label>Subscription Status</label>
+				<div class="value"><span class="status-badge ${statusBadgeClass(donor.subscription_status)}">${donor.subscription_status || 'NA'}</span></div>
+			</div>
+			<div class="profile-field">
+				<label>Member Since</label>
+				<div class="value">${formatDate(donor.last_donation_date)}</div>
+			</div>
+		</div>
+	`;
+}
+
+function toggleSubDetails(idx) {
+	const detailRow = document.getElementById(`sub-details-${idx}`);
+	const btn = document.getElementById(`expand-btn-${idx}`);
+	if (!detailRow) return;
+	const isOpen = detailRow.classList.contains('open');
+	detailRow.classList.toggle('open', !isOpen);
+	if (btn) btn.classList.toggle('open', !isOpen);
+}
+
+frappe.ready(function() {
+	loadPortalData();
+});
+</script>
+{% endblock %}

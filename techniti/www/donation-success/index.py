@@ -9,13 +9,15 @@ no_cache = 1
 def get_context(context):
 	context.no_cache = 1
 
+	context.donate_url = frappe.utils.get_url("/donate")
+
 	donation_id = frappe.form_dict.get("id")
 
 	if donation_id:
 		try:
 			donation = frappe.get_doc("Website Donation", donation_id)
 			context.donation = donation
-			context.success = donation.payment_status == "Paid"
+			context.success = donation.payment_status == "Captured"
 		except frappe.DoesNotExistError:
 			context.donation = None
 			context.success = False

@@ -10,65 +10,64 @@
   "donor",
   "donor_name",
   "donor_email",
-  "donor_mobile",
   "donor_id_type",
   "donor_id_number",
   "column_break_1",
-  "cause",
-  "campaign",
-  "subscription",
-  "amount",
-  "donation_date",
-  "mode_of_payment",
-  "is_anonymous",
-  "is_club_donation",
+  "from_date",
+  "start_month",
+  "to_date",
+  "status",
+  "section_break_subscription",
+  "type",
+  "total_amount",
   "number_of_months",
-  "section_break_payment",
-  "payment_status",
+  "cost",
+  "cause",
+  "mode_of_payment",
   "column_break_2",
-  "razorpay_payment_id",
+  "payment_status",
   "razorpay_order_id",
-  "razorpay_signature",
+  "razorpay_payment_id",
+  "razorpay_subscription_id",
   "section_break_receipt",
   "receipt_donor_check",
   "receipt_donor",
   "receipt_donor_name",
   "id_number_receipt_donor",
   "receipt_donor_email",
-  "sent_receipt",
-  "sent_receipt_date",
   "section_break_company",
   "is_company_donation",
   "company_name",
   "sub_donor",
   "sub_donor_name",
-  "section_break_additional",
-  "message",
-  "amended_from"
+  "section_break_details",
+  "donation_details",
+  "additional_note"
  ],
  "fields": [
   {
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Naming Series",
-   "options": "WDON-.YYYY.-.#####",
+   "options": "WDSUB-.YYYY.-.#####",
    "reqd": 1
   },
   {
    "fieldname": "donor",
    "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Donor",
-   "options": "Website Donor"
+   "options": "Website Donor",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
   },
   {
    "fetch_from": "donor.full_name",
    "fieldname": "donor_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Donor Name",
-   "read_only": 1
+   "read_only": 1,
+   "in_list_view": 1
   },
   {
    "fetch_from": "donor.email",
@@ -78,24 +77,17 @@
    "read_only": 1
   },
   {
-   "fetch_from": "donor.mobile",
-   "fieldname": "donor_mobile",
-   "fieldtype": "Data",
-   "label": "Donor Mobile",
-   "read_only": 1
-  },
-  {
    "fetch_from": "donor.id_type",
    "fieldname": "donor_id_type",
    "fieldtype": "Data",
-   "label": "Donor ID Type",
+   "label": "ID Type",
    "read_only": 1
   },
   {
    "fetch_from": "donor.id_number",
    "fieldname": "donor_id_number",
    "fieldtype": "Data",
-   "label": "Donor ID Number",
+   "label": "ID Number",
    "read_only": 1
   },
   {
@@ -103,89 +95,94 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "cause",
-   "fieldtype": "Link",
-   "label": "Cause",
-   "options": "Cause",
-   "in_standard_filter": 1
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "Donation Date",
+   "reqd": 1,
+   "default": "Today",
+   "in_list_view": 1
   },
   {
-   "fieldname": "campaign",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Campaign",
-   "options": "Website Donation Campaign"
+   "fieldname": "start_month",
+   "fieldtype": "Date",
+   "label": "From Month",
+   "reqd": 1,
+   "description": "First day of the month subscription starts"
   },
   {
-   "fieldname": "subscription",
-   "fieldtype": "Link",
-   "label": "Subscription",
-   "options": "Website Donation Subscription",
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date",
    "read_only": 1
   },
   {
-   "fieldname": "amount",
-   "fieldtype": "Currency",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nOn Processing\nExpiring Soon\nExpired",
+   "read_only": 1,
    "in_list_view": 1,
-   "label": "Amount",
-   "reqd": 1
+   "in_standard_filter": 1,
+   "default": "On Processing"
   },
   {
-   "fieldname": "donation_date",
-   "fieldtype": "Date",
-   "in_list_view": 1,
-   "label": "Donation Date",
-   "default": "Today",
-   "reqd": 1
+   "fieldname": "section_break_subscription",
+   "fieldtype": "Section Break",
+   "label": "Subscription Details"
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "Fixed\nUnfixed",
+   "default": "Fixed"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "number_of_months",
+   "fieldtype": "Int",
+   "label": "Number of Months",
+   "reqd": 1,
+   "default": "1"
+  },
+  {
+   "fieldname": "cost",
+   "fieldtype": "Currency",
+   "label": "Monthly Amount",
+   "read_only": 1,
+   "depends_on": "eval:doc.type=='Fixed'"
+  },
+  {
+   "fieldname": "cause",
+   "fieldtype": "Link",
+   "label": "Cause",
+   "options": "Cause"
   },
   {
    "fieldname": "mode_of_payment",
    "fieldtype": "Select",
    "label": "Mode of Payment",
    "options": "Online\nUPI\nBank Transfer\nOther",
+   "reqd": 1,
    "default": "Online"
-  },
-  {
-   "fieldname": "is_anonymous",
-   "fieldtype": "Check",
-   "label": "Anonymous Donation"
-  },
-  {
-   "fieldname": "is_club_donation",
-   "fieldtype": "Check",
-   "label": "Club Donation / Subscription"
-  },
-  {
-   "fieldname": "number_of_months",
-   "fieldtype": "Int",
-   "label": "Number of Months",
-   "read_only": 1,
-   "description": "For club donations: how many months this payment covers"
-  },
-  {
-   "fieldname": "section_break_payment",
-   "fieldtype": "Section Break",
-   "label": "Payment Details"
-  },
-  {
-   "fieldname": "payment_status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Payment Status",
-   "options": "Pending\nCaptured\nFailed",
-   "default": "Pending"
   },
   {
    "fieldname": "column_break_2",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "razorpay_payment_id",
-   "fieldtype": "Data",
-   "label": "Razorpay Payment ID",
-   "read_only": 1
+   "fieldname": "payment_status",
+   "fieldtype": "Select",
+   "label": "Payment Status",
+   "options": "Pending\nCaptured\nFailed",
+   "default": "Pending",
+   "in_list_view": 1
   },
   {
    "fieldname": "razorpay_order_id",
@@ -194,11 +191,16 @@
    "read_only": 1
   },
   {
-   "fieldname": "razorpay_signature",
+   "fieldname": "razorpay_payment_id",
    "fieldtype": "Data",
-   "label": "Razorpay Signature",
-   "read_only": 1,
-   "hidden": 1
+   "label": "Razorpay Payment ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "razorpay_subscription_id",
+   "fieldtype": "Data",
+   "label": "Razorpay Subscription ID",
+   "read_only": 1
   },
   {
    "fieldname": "section_break_receipt",
@@ -210,7 +212,7 @@
    "fieldtype": "Check",
    "label": "Receipt Name is Donor Name",
    "default": "1",
-   "description": "If unchecked, select a different donor for the tax receipt"
+   "description": "If unchecked, you can select a different donor for the tax receipt"
   },
   {
    "fieldname": "receipt_donor",
@@ -239,18 +241,6 @@
    "fieldname": "receipt_donor_email",
    "fieldtype": "Data",
    "label": "Receipt Donor Email",
-   "read_only": 1
-  },
-  {
-   "fieldname": "sent_receipt",
-   "fieldtype": "Check",
-   "label": "Receipt Sent",
-   "read_only": 1
-  },
-  {
-   "fieldname": "sent_receipt_date",
-   "fieldtype": "Date",
-   "label": "Receipt Sent Date",
    "read_only": 1
   },
   {
@@ -286,32 +276,29 @@
    "read_only": 1
   },
   {
-   "fieldname": "section_break_additional",
+   "fieldname": "section_break_details",
    "fieldtype": "Section Break",
-   "label": "Additional Information"
+   "label": "Month-wise Breakdown"
   },
   {
-   "fieldname": "message",
-   "fieldtype": "Small Text",
-   "label": "Message from Donor"
-  },
-  {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Website Donation",
-   "print_hide": 1,
+   "fieldname": "donation_details",
+   "fieldtype": "Table",
+   "label": "Donation Details",
+   "options": "Website Donation Sub Detail",
    "read_only": 1
+  },
+  {
+   "fieldname": "additional_note",
+   "fieldtype": "Small Text",
+   "label": "Additional Note"
   }
  ],
  "index_web_pages_for_search": 1,
- "is_submittable": 1,
  "links": [],
  "modified": "2024-01-17 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Techniti",
- "name": "Website Donation",
+ "name": "Website Donation Subscription",
  "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
@@ -325,8 +312,6 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
-   "submit": 1,
-   "cancel": 1,
    "write": 1
   }
  ],

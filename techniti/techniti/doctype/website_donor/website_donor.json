@@ -14,9 +14,23 @@
   "column_break_1",
   "email",
   "mobile",
+  "linked_user",
+  "tab_break_status",
+  "section_break_status",
+  "is_club_donor",
+  "subscription_status",
+  "donor_category",
+  "pause_date",
   "section_break_stats",
   "total_donated",
-  "donation_count"
+  "donation_count",
+  "last_donation_date",
+  "tab_break_club",
+  "section_break_clubs",
+  "club_details",
+  "tab_break_linked",
+  "section_break_linked_info",
+  "linked_records_html"
  ],
  "fields": [
   {
@@ -39,15 +53,13 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "ID Type",
-   "options": "\nPAN Card\nAadhar Card",
-   "reqd": 1
+   "options": "\nPAN Card\nAadhar Card"
   },
   {
    "fieldname": "id_number",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "ID Number",
-   "reqd": 1
+   "label": "ID Number"
   },
   {
    "fieldname": "column_break_1",
@@ -68,6 +80,55 @@
    "options": "Phone"
   },
   {
+   "fieldname": "linked_user",
+   "fieldtype": "Link",
+   "label": "Linked User",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tab_break_status",
+   "fieldtype": "Tab Break",
+   "label": "Status & Stats"
+  },
+  {
+   "fieldname": "section_break_status",
+   "fieldtype": "Section Break",
+   "label": "Donor Status"
+  },
+  {
+   "fieldname": "is_club_donor",
+   "fieldtype": "Check",
+   "label": "Club Donor",
+   "read_only": 1,
+   "description": "Set automatically when donor has an active subscription"
+  },
+  {
+   "fieldname": "subscription_status",
+   "fieldtype": "Select",
+   "label": "Subscription Status",
+   "options": "NA\nActive\nPaused\nExpired",
+   "default": "NA",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "donor_category",
+   "fieldtype": "Select",
+   "label": "Category",
+   "options": "Inactive\nBronze\nSilver\nGold\nDiamond\nPlatinum",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Auto-calculated based on total donations in last 365 days"
+  },
+  {
+   "fieldname": "pause_date",
+   "fieldtype": "Date",
+   "label": "Paused Till",
+   "description": "Subscriptions will resume after this date. Leave blank if not paused."
+  },
+  {
    "fieldname": "section_break_stats",
    "fieldtype": "Section Break",
    "label": "Donation Statistics"
@@ -85,10 +146,65 @@
    "label": "Number of Donations",
    "read_only": 1,
    "default": "0"
+  },
+  {
+   "fieldname": "last_donation_date",
+   "fieldtype": "Date",
+   "label": "Last Donation Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tab_break_club",
+   "fieldtype": "Tab Break",
+   "label": "Club Details"
+  },
+  {
+   "fieldname": "section_break_clubs",
+   "fieldtype": "Section Break",
+   "label": "Club Memberships by Cause",
+   "description": "Edit monthly amount here to change a donor's club contribution (Netflix-style upgrade/downgrade). Save the record after changes."
+  },
+  {
+   "fieldname": "club_details",
+   "fieldtype": "Table",
+   "label": "Club Details",
+   "options": "Website Donor Cause Club"
+  },
+  {
+   "fieldname": "tab_break_linked",
+   "fieldtype": "Tab Break",
+   "label": "Linked Records"
+  },
+  {
+   "fieldname": "section_break_linked_info",
+   "fieldtype": "Section Break",
+   "label": "Donations & Subscriptions"
+  },
+  {
+   "fieldname": "linked_records_html",
+   "fieldtype": "HTML",
+   "label": "Linked Records",
+   "options": "<div id='linked-records-container'><p style='color:#aaa;font-size:13px;'>Loading linked records...</p></div>"
   }
  ],
  "index_web_pages_for_search": 1,
- "links": [],
+ "links": [
+  {
+   "group": "Donations",
+   "link_doctype": "Website Donation",
+   "link_fieldname": "donor"
+  },
+  {
+   "group": "Subscriptions",
+   "link_doctype": "Website Donation Subscription",
+   "link_fieldname": "donor"
+  },
+  {
+   "group": "Subscriptions",
+   "link_doctype": "Website Expired Subscription",
+   "link_fieldname": "donor"
+  }
+ ],
  "modified": "2024-01-17 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Techniti",

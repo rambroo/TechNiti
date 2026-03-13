@@ -1,352 +1,955 @@
 {% extends "templates/web.html" %}
 
-{% block title %}Donate - TechNiti{% endblock %}
+{% block title %}Donate — WCWW{% endblock %}
 
 {% block head_include %}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-	* { margin: 0; padding: 0; box-sizing: border-box; }
+/* ── Reset & Base ─────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #0b1a10 !important; }
+.page-content, .main-section, .container, nav.navbar, .web-footer, footer, .navbar {
+	background: transparent !important; padding: 0 !important; max-width: 100% !important;
+}
 
-	:root {
-		--primary: #3cc88f;
-		--primary-dark: #2ba872;
-		--primary-light: #6edcaf;
-		--secondary: #ff6b70;
-		--success: #3cc88f;
-		--warning: #f7a900;
-		--error: #ff6b70;
-		--dark: #25283a;
-		--gray-50: #f7f8f9;
-		--gray-100: #edf1f5;
-		--gray-200: #e0e0e0;
-		--gray-300: #d1d5db;
-		--gray-400: #9ca3af;
-		--gray-500: #6b7280;
-		--gray-600: #4b5563;
-		--gray-700: #374151;
-		--gray-800: #25283a;
-		--gray-900: #25283a;
-		--radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 20px;
-		--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-		--shadow-xl: 0px 10px 30px 3px rgba(0,0,0,0.10);
-		--shadow-2xl: 0px 15px 40px 5px rgba(0,0,0,0.10);
-	}
+:root {
+	--primary: #3cc88f;
+	--primary-dark: #2ba872;
+	--primary-light: #d1f5e7;
+	--dark: #0b1a10;
+	--card-bg: #ffffff;
+	--text: #111827;
+	--text-muted: #6b7280;
+	--border: #e5e7eb;
+	--error: #dc2626;
+	--warning: #f59e0b;
+	--radius: 12px;
+	--radius-lg: 18px;
+	--shadow: 0 4px 24px rgba(0,0,0,0.10);
+	--shadow-lg: 0 12px 48px rgba(0,0,0,0.18);
+}
 
-	body { font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: #1a3a2a !important; }
-	.page-content, .container, .web-footer, footer, nav.navbar, .navbar { background: transparent !important; }
-	.main-section { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-	.page-content { padding: 0 !important; }
-	.container { max-width: 100% !important; padding: 0 !important; }
+/* ── Page Shell ──────────────────────────────── */
+.donate-page {
+	min-height: 100vh;
+	background: linear-gradient(160deg, #0b1a10 0%, #0f2318 40%, #0e1c2a 100%);
+	display: flex;
+	flex-direction: column;
+}
 
-	.donation-page {
-		min-height: 100vh;
-		background: linear-gradient(135deg, #1a3a2a 0%, #25283a 50%, #1a3a2a 100%);
-		position: relative; overflow: hidden;
-	}
+.donate-inner {
+	flex: 1;
+	display: grid;
+	grid-template-columns: 420px 1fr;
+	min-height: 100vh;
+}
 
-	.bg-animation { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; }
-	.bg-animation .circle { position: absolute; border-radius: 50%; background: linear-gradient(135deg, rgba(60,200,143,0.2), rgba(255,107,112,0.15)); animation: float 20s infinite ease-in-out; }
-	.bg-animation .circle:nth-child(1) { width: 400px; height: 400px; top: -100px; right: -100px; }
-	.bg-animation .circle:nth-child(2) { width: 300px; height: 300px; bottom: -50px; left: -50px; animation-delay: -5s; }
-	.bg-animation .circle:nth-child(3) { width: 200px; height: 200px; top: 50%; left: 20%; animation-delay: -10s; }
-	@keyframes float { 0%,100%{transform:translateY(0) rotate(0deg) scale(1)} 33%{transform:translateY(-30px) rotate(120deg) scale(1.1)} 66%{transform:translateY(20px) rotate(240deg) scale(0.9)} }
+/* ── LEFT PANEL — Hero ───────────────────────── */
+.hero-panel {
+	padding: 56px 48px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	position: sticky;
+	top: 0;
+	height: 100vh;
+	overflow: hidden;
+}
 
-	.donation-container { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+.hero-logo {
+	font-family: 'Playfair Display', serif;
+	font-size: 22px;
+	font-weight: 700;
+	color: var(--primary);
+	letter-spacing: 2px;
+	margin-bottom: 40px;
+}
 
-	.donation-header { text-align: center; margin-bottom: 40px; animation: fadeInDown 0.8s ease; }
-	@keyframes fadeInDown { from{opacity:0;transform:translateY(-30px)} to{opacity:1;transform:translateY(0)} }
+.hero-tagline {
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: var(--primary);
+	margin-bottom: 16px;
+}
 
-	.logo-icon { width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 10px 40px rgba(60,200,143,0.4); animation: pulse 2s infinite; }
-	@keyframes pulse { 0%,100%{box-shadow:0 10px 40px rgba(60,200,143,0.4)} 50%{box-shadow:0 10px 60px rgba(60,200,143,0.6)} }
-	.logo-icon svg { width: 40px; height: 40px; color: white; }
+.hero-title {
+	font-family: 'Playfair Display', serif;
+	font-size: 44px;
+	font-weight: 700;
+	color: #fff;
+	line-height: 1.15;
+	margin-bottom: 24px;
+}
 
-	.donation-header h1 { font-family: 'Yeseva One', cursive; font-size: 3rem; font-weight: 400; color: white; margin-bottom: 12px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-	.donation-header p { font-size: 1.2rem; color: rgba(255,255,255,0.8); max-width: 500px; margin: 0 auto; line-height: 1.7; }
+.hero-title em { color: var(--primary); font-style: normal; }
 
-	.donation-card { background: white; border-radius: var(--radius-xl); box-shadow: var(--shadow-2xl); overflow: hidden; animation: fadeInUp 0.8s ease 0.2s both; }
-	@keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+.hero-desc {
+	font-size: 15px;
+	color: rgba(255,255,255,0.65);
+	line-height: 1.7;
+	margin-bottom: 40px;
+	max-width: 320px;
+}
 
-	.steps-indicator { display: flex; justify-content: center; gap: 8px; padding: 24px; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); }
-	.step { display: flex; align-items: center; gap: 8px; color: var(--gray-400); font-size: 0.875rem; font-weight: 600; transition: all 0.3s ease; }
-	.step.active { color: var(--primary); }
-	.step.completed { color: var(--success); }
-	.step-number { width: 28px; height: 28px; border-radius: 50%; background: var(--gray-200); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; transition: all 0.3s ease; }
-	.step.active .step-number { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(60,200,143,0.4); }
-	.step.completed .step-number { background: var(--success); color: white; }
-	.step-divider { width: 40px; height: 2px; background: var(--gray-200); border-radius: 1px; }
-	.step-divider.active { background: var(--primary); }
+.hero-stat {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	margin-bottom: 32px;
+}
 
-	.campaign-section { padding: 32px; border-bottom: 1px solid var(--gray-100); }
-	.section-title { font-family: 'Yeseva One', cursive; font-size: 1.25rem; font-weight: 400; color: var(--gray-900); margin-bottom: 8px; }
-	.section-subtitle { font-size: 0.9rem; color: var(--gray-500); margin-bottom: 24px; }
+.hero-stat-number {
+	font-family: 'Playfair Display', serif;
+	font-size: 52px;
+	font-weight: 700;
+	color: var(--primary);
+	line-height: 1;
+}
 
-	.campaign-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-	.campaign-card { position: relative; border: 2px solid var(--gray-200); border-radius: var(--radius-xl); padding: 24px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); background: white; overflow: hidden; }
-	.campaign-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--secondary)); transform: scaleX(0); transition: transform 0.3s ease; }
-	.campaign-card:hover { border-color: var(--primary-light); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-	.campaign-card:hover::before, .campaign-card.selected::before { transform: scaleX(1); }
-	.campaign-card.selected { border-color: var(--primary); background: linear-gradient(135deg, rgba(60,200,143,0.05), rgba(255,107,112,0.05)); }
-	.campaign-check { position: absolute; top: 16px; right: 16px; width: 28px; height: 28px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(0.5); transition: all 0.3s ease; }
-	.campaign-card.selected .campaign-check { opacity: 1; transform: scale(1); }
-	.campaign-check svg { width: 16px; height: 16px; color: white; }
-	.campaign-name { font-family: 'Yeseva One', cursive; font-size: 1.1rem; font-weight: 400; color: var(--gray-900); margin-bottom: 8px; padding-right: 40px; }
-	.campaign-desc { font-size: 0.875rem; color: var(--gray-500); margin-bottom: 16px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-	.campaign-progress-wrapper { margin-bottom: 12px; }
-	.campaign-progress-bar { height: 8px; background: var(--gray-100); border-radius: 4px; overflow: hidden; }
-	.campaign-progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 4px; transition: width 1s ease; position: relative; }
-	.campaign-progress-fill::after { content: ''; position: absolute; top:0;left:0;right:0;bottom:0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shimmer 2s infinite; }
-	@keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
-	.campaign-stats { display: flex; justify-content: space-between; font-size: 0.8rem; }
-	.campaign-stat { color: var(--gray-600); }
-	.campaign-stat strong { color: var(--gray-900); font-weight: 600; }
+.hero-stat-label {
+	font-size: 14px;
+	color: rgba(255,255,255,0.5);
+	line-height: 1.4;
+}
 
-	.amount-section { padding: 32px; border-bottom: 1px solid var(--gray-100); }
-	.amount-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
-	@media (max-width:768px) { .amount-grid{grid-template-columns:repeat(3,1fr)} }
-	@media (max-width:480px) { .amount-grid{grid-template-columns:repeat(2,1fr)} }
-	.amount-option { position: relative; padding: 16px 12px; border: 2px solid var(--gray-200); border-radius: var(--radius-md); background: white; cursor: pointer; text-align: center; transition: all 0.2s ease; overflow: hidden; }
-	.amount-option:hover { border-color: var(--primary-light); transform: scale(1.02); }
-	.amount-option.selected { border-color: var(--primary); background: var(--primary); color: white; transform: scale(1.05); box-shadow: 0 8px 20px rgba(60,200,143,0.3), 2px 2px 0px var(--dark); }
-	.amount-option.popular::before { content: 'Popular'; position: absolute; top: -1px; right: -1px; background: var(--warning); color: white; font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 0 8px 0 8px; }
-	.amount-value { font-size: 1.25rem; font-weight: 700; }
-	.custom-amount-container { position: relative; max-width: 100%; }
-	.custom-amount-label { font-size: 0.875rem; font-weight: 600; color: var(--gray-700); margin-bottom: 8px; display: block; }
-	.custom-amount-input-wrapper { position: relative; display: flex; align-items: center; }
-	.currency-prefix { position: absolute; left: 16px; font-size: 1.5rem; font-weight: 700; color: var(--gray-400); pointer-events: none; transition: color 0.3s ease; }
-	.custom-amount-input { width: 100%; padding: 16px 16px 16px 48px; font-size: 1.5rem; font-weight: 700; border: 1px solid var(--gray-200); border-radius: var(--radius-md); transition: all 0.3s ease; color: var(--gray-900); font-family: 'Open Sans', sans-serif; }
-	.custom-amount-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(60,200,143,0.1); }
-	.custom-amount-input-wrapper:focus-within .currency-prefix { color: var(--primary); }
-	.custom-amount-input::placeholder { color: var(--gray-300); font-weight: 500; }
+.trust-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-top: 8px;
+}
 
-	.donor-section { padding: 32px; border-bottom: 1px solid var(--gray-100); }
-	.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-	@media (max-width:600px) { .form-grid{grid-template-columns:1fr} }
-	.form-group { margin-bottom: 0; }
-	.form-group.full-width { grid-column: 1 / -1; }
-	.form-label { display: flex; align-items: center; gap: 6px; font-size: 0.875rem; font-weight: 600; color: var(--gray-700); margin-bottom: 8px; }
-	.form-label .required { color: var(--error); }
-	.form-label .optional { color: var(--gray-400); font-weight: 400; font-size: 0.8rem; }
-	.form-input { width: 100%; padding: 14px 16px; font-size: 1rem; border: 1px solid var(--gray-200); border-radius: var(--radius-md); transition: all 0.3s ease; color: var(--gray-900); background: white; font-family: 'Open Sans', sans-serif; }
-	.form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(60,200,143,0.1); }
-	.form-input::placeholder { color: var(--gray-400); }
-	.form-input.error { border-color: var(--error); box-shadow: 0 0 0 4px rgba(255,107,112,0.1); }
-	textarea.form-input { resize: vertical; min-height: 100px; }
-	select.form-input { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+.trust-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 12px;
+	color: rgba(255,255,255,0.45);
+	font-weight: 500;
+}
 
-	.checkbox-wrapper { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--gray-50); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s ease; }
-	.checkbox-wrapper:hover { background: var(--gray-100); }
-	.custom-checkbox { position: relative; width: 24px; height: 24px; flex-shrink: 0; }
-	.custom-checkbox input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
-	.checkbox-mark { position: absolute; top:0;left:0; width: 24px; height: 24px; border: 2px solid var(--gray-300); border-radius: 6px; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
-	.custom-checkbox input:checked + .checkbox-mark { background: var(--primary); border-color: var(--primary); }
-	.checkbox-mark svg { width: 14px; height: 14px; color: white; opacity: 0; transform: scale(0.5); transition: all 0.2s ease; }
-	.custom-checkbox input:checked + .checkbox-mark svg { opacity: 1; transform: scale(1); }
-	.checkbox-text { font-size: 0.9rem; color: var(--gray-700); }
-	.checkbox-text strong { color: var(--gray-900); }
+/* ── RIGHT PANEL — Form ──────────────────────── */
+.form-panel {
+	padding: 40px 48px 80px;
+	background: #f5f7f6;
+	overflow-y: auto;
+}
 
-	.submit-section { padding: 32px; background: linear-gradient(135deg, rgba(60,200,143,0.03), rgba(255,107,112,0.03)); }
-	.donation-summary { background: white; border: 2px solid var(--gray-100); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; }
-	.summary-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--gray-100); }
-	.summary-row:last-child { border-bottom: none; padding-bottom: 0; }
-	.summary-row.total { padding-top: 16px; margin-top: 8px; border-top: 2px solid var(--gray-200); border-bottom: none; }
-	.summary-label { font-size: 0.9rem; color: var(--gray-600); }
-	.summary-value { font-weight: 600; color: var(--gray-900); }
-	.summary-row.total .summary-label { font-size: 1.1rem; font-weight: 600; color: var(--gray-900); }
-	.summary-row.total .summary-value { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+/* ── Steps indicator ─────────────────────────── */
+.steps-indicator {
+	display: flex;
+	align-items: center;
+	margin-bottom: 32px;
+	gap: 0;
+}
 
-	.donate-button { width: 100%; padding: 15px 45px; font-size: 1.1rem; font-weight: 700; color: white; background: var(--primary); border: none; border-radius: 30px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); display: flex; align-items: center; justify-content: center; gap: 12px; position: relative; overflow: hidden; box-shadow: 2px 2px 0px var(--dark); font-family: 'Open Sans', sans-serif; }
-	.donate-button::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s ease; }
-	.donate-button:hover::before { left: 100%; }
-	.donate-button:hover { transform: translateY(-2px) scale(1.02); box-shadow: 4px 4px 0px var(--dark), 0 12px 24px rgba(60,200,143,0.3); }
-	.donate-button:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-	.donate-button .spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
-	@keyframes spin { to{transform:rotate(360deg)} }
+.step {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #9ca3af;
+}
 
-	.secure-badge { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; color: var(--gray-500); font-size: 0.85rem; }
-	.secure-badge svg { color: var(--success); }
+.step-number {
+	width: 28px; height: 28px;
+	border-radius: 50%;
+	background: #e5e7eb;
+	color: #9ca3af;
+	display: flex; align-items: center; justify-content: center;
+	font-size: 13px; font-weight: 700;
+	transition: all 0.25s;
+	flex-shrink: 0;
+}
 
-	.error-alert { display: none; align-items: center; gap: 12px; padding: 16px; background: #fff5f5; border: 1px solid #fecaca; border-radius: var(--radius-md); margin-bottom: 24px; animation: shake 0.5s ease; }
-	@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
-	.error-alert.show { display: flex; }
-	.error-alert svg { flex-shrink: 0; color: var(--error); }
-	.error-alert-text { color: var(--error); font-size: 0.9rem; font-weight: 500; }
+.step.active { color: var(--text); }
+.step.active .step-number { background: var(--primary); color: #fff; }
+.step.completed { color: var(--primary); }
+.step.completed .step-number { background: var(--primary); color: #fff; }
+.step.completed .step-number::before { content: '✓'; }
+.step.completed .step-number { font-size: 0; }
+.step.completed .step-number::before { font-size: 14px; }
 
-	.no-campaigns { text-align: center; padding: 80px 40px; }
-	.no-campaigns-icon { width: 80px; height: 80px; background: var(--gray-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
-	.no-campaigns-icon svg { width: 40px; height: 40px; color: var(--gray-400); }
-	.no-campaigns h3 { font-family: 'Yeseva One', cursive; font-size: 1.5rem; color: var(--gray-900); margin-bottom: 8px; }
-	.no-campaigns p { color: var(--gray-500); max-width: 400px; margin: 0 auto; }
+.step-divider { flex: 1; height: 2px; background: #e5e7eb; margin: 0 8px; transition: background 0.25s; }
+.step-divider.active { background: var(--primary); }
 
-	.impact-section { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; animation: fadeInUp 0.8s ease 0.4s both; }
-	@media (max-width:768px) { .impact-section{grid-template-columns:1fr} }
-	.impact-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-xl); padding: 24px; text-align: center; color: white; }
-	.impact-icon { width: 48px; height: 48px; background: rgba(60,200,143,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
-	.impact-icon svg { width: 24px; height: 24px; }
-	.impact-number { font-family: 'Yeseva One', cursive; font-size: 2rem; margin-bottom: 4px; }
-	.impact-label { font-size: 0.85rem; opacity: 0.8; }
+/* ── Section blocks ──────────────────────────── */
+.form-section {
+	background: #fff;
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow);
+	padding: 28px;
+	margin-bottom: 16px;
+}
+
+.section-heading {
+	font-family: 'Playfair Display', serif;
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--text);
+	margin-bottom: 4px;
+}
+
+.section-sub {
+	font-size: 13px;
+	color: var(--text-muted);
+	margin-bottom: 20px;
+}
+
+/* ── Donation Type Cards ──────────────────────── */
+.donation-type-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 14px;
+	margin-top: 4px;
+}
+
+.dtype-card {
+	border: 2px solid var(--border);
+	border-radius: var(--radius);
+	padding: 22px 18px;
+	cursor: pointer;
+	transition: all 0.2s;
+	background: #fafafa;
+	text-align: center;
+	position: relative;
+}
+
+.dtype-card:hover { border-color: var(--primary); background: rgba(60,200,143,0.04); }
+.dtype-card.selected { border-color: var(--primary); background: rgba(60,200,143,0.07); }
+
+.dtype-card .dtype-icon {
+	font-size: 32px;
+	margin-bottom: 10px;
+	line-height: 1;
+}
+
+.dtype-card .dtype-title {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--text);
+	margin-bottom: 4px;
+}
+
+.dtype-card .dtype-sub {
+	font-size: 12px;
+	color: var(--text-muted);
+	line-height: 1.4;
+}
+
+.dtype-check {
+	position: absolute;
+	top: 10px; right: 10px;
+	width: 20px; height: 20px;
+	border-radius: 50%;
+	background: var(--primary);
+	display: flex; align-items: center; justify-content: center;
+	opacity: 0; transform: scale(0.5);
+	transition: all 0.2s;
+}
+
+.dtype-card.selected .dtype-check { opacity: 1; transform: scale(1); }
+
+/* ── Campaign cards ──────────────────────────── */
+.campaign-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+
+.campaign-card {
+	position: relative;
+	border: 1.5px solid var(--border);
+	border-radius: var(--radius);
+	padding: 20px;
+	cursor: pointer;
+	transition: all 0.2s;
+	background: #fff;
+	overflow: hidden;
+}
+
+.campaign-card:hover { border-color: rgba(60,200,143,0.5); transform: translateY(-2px); box-shadow: var(--shadow); }
+.campaign-card.selected { border-color: var(--primary); background: #f0fdf8; }
+
+.campaign-check {
+	position: absolute; top: 14px; right: 14px;
+	width: 22px; height: 22px; border-radius: 50%;
+	background: var(--primary);
+	display: flex; align-items: center; justify-content: center;
+	opacity: 0; transform: scale(0.5);
+	transition: all 0.2s;
+}
+.campaign-card.selected .campaign-check { opacity: 1; transform: scale(1); }
+
+.campaign-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.campaign-progress { height: 4px; background: #f0f0f0; border-radius: 2px; margin: 10px 0 6px; overflow: hidden; }
+.campaign-progress-fill { height: 100%; background: var(--primary); border-radius: 2px; }
+.campaign-stats { font-size: 12px; color: var(--text-muted); }
+
+/* ── Amount grid ─────────────────────────────── */
+.amount-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 10px;
+	margin-bottom: 14px;
+}
+
+.amount-option {
+	padding: 14px 8px;
+	border: 1.5px solid var(--border);
+	border-radius: var(--radius);
+	text-align: center;
+	cursor: pointer;
+	transition: all 0.15s;
+	background: #fff;
+	position: relative;
+}
+
+.amount-option:hover { border-color: var(--primary); background: rgba(60,200,143,0.04); }
+.amount-option.selected { border-color: var(--primary); background: rgba(60,200,143,0.08); }
+.amount-option.popular::before { content: 'Popular'; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.5px; }
+
+.amount-value { font-size: 16px; font-weight: 700; color: var(--text); }
+.amount-option.selected .amount-value { color: var(--primary); }
+
+/* ── Form elements ───────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.span-2 { grid-column: 1 / -1; }
+
+.form-label {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--text);
+}
+
+.req { color: var(--error); margin-left: 2px; }
+.opt { color: var(--text-muted); font-weight: 400; }
+
+.form-input {
+	width: 100%;
+	padding: 11px 14px;
+	border: 1.5px solid var(--border);
+	border-radius: var(--radius);
+	font-family: 'Inter', sans-serif;
+	font-size: 14px;
+	color: var(--text);
+	transition: border-color 0.15s, box-shadow 0.15s;
+	background: #fff;
+}
+
+.form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(60,200,143,0.12); }
+.form-input::placeholder { color: #c4c9d0; }
+textarea.form-input { resize: vertical; min-height: 72px; }
+select.form-input { cursor: pointer; }
+
+/* ── Custom checkbox ─────────────────────────── */
+.check-row {
+	display: flex; align-items: flex-start; gap: 10px; cursor: pointer; user-select: none;
+}
+
+.custom-checkbox { position: relative; flex-shrink: 0; margin-top: 1px; }
+.custom-checkbox input { position: absolute; opacity: 0; width: 0; height: 0; }
+.checkbox-mark {
+	display: flex; align-items: center; justify-content: center;
+	width: 18px; height: 18px;
+	border: 2px solid var(--border); border-radius: 4px; background: #fff;
+	transition: all 0.15s;
+}
+.custom-checkbox input:checked + .checkbox-mark { background: var(--primary); border-color: var(--primary); }
+.checkbox-mark svg { display: none; width: 11px; height: 11px; stroke: #fff; stroke-width: 3; }
+.custom-checkbox input:checked + .checkbox-mark svg { display: block; }
+.check-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+
+/* ── Error alert ─────────────────────────────── */
+.error-alert {
+	display: none;
+	align-items: flex-start;
+	gap: 10px;
+	background: #fef2f2;
+	border: 1px solid #fecaca;
+	border-radius: var(--radius);
+	padding: 12px 16px;
+	margin-bottom: 16px;
+	color: var(--error);
+	font-size: 14px;
+}
+
+.error-alert.show { display: flex; }
+
+/* ── Summary box ─────────────────────────────── */
+.donation-summary {
+	border-radius: var(--radius);
+	border: 1.5px solid var(--border);
+	padding: 20px;
+	margin-bottom: 16px;
+}
+
+.summary-row {
+	display: flex; justify-content: space-between; align-items: center;
+	padding: 8px 0;
+	border-bottom: 1px solid #f3f4f6;
+	font-size: 14px;
+}
+
+.summary-row:last-child { border-bottom: none; padding-bottom: 0; }
+.summary-label { color: var(--text-muted); }
+.summary-value { font-weight: 600; color: var(--text); }
+
+.summary-row.total {
+	padding-top: 14px;
+	margin-top: 8px;
+	border-top: 2px solid var(--border);
+	border-bottom: none;
+}
+
+.summary-row.total .summary-label { font-size: 15px; font-weight: 600; color: var(--text); }
+.summary-row.total .summary-value { font-size: 22px; font-weight: 700; color: var(--primary); }
+
+.donate-button {
+	width: 100%;
+	padding: 16px;
+	background: var(--primary);
+	color: #fff; border: none;
+	border-radius: 100px;
+	font-family: 'Inter', sans-serif;
+	font-size: 16px; font-weight: 700;
+	cursor: pointer;
+	display: flex; align-items: center; justify-content: center; gap: 10px;
+	transition: all 0.2s;
+	box-shadow: 0 4px 20px rgba(60,200,143,0.35);
+	letter-spacing: 0.3px;
+}
+
+.donate-button:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(60,200,143,0.4); }
+.donate-button:active { transform: translateY(0); }
+.donate-button:disabled { background: #9ca3af; box-shadow: none; cursor: not-allowed; transform: none; }
+
+.btn-spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.secure-note {
+	display: flex; align-items: center; justify-content: center;
+	gap: 6px; margin-top: 12px;
+	font-size: 12px; color: #9ca3af;
+}
+
+/* ── Cause Chips ──────────────────────────────── */
+.cause-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.cause-chip {
+	padding: 8px 18px;
+	border: 1.5px solid var(--border); border-radius: 100px;
+	font-size: 14px; font-weight: 500; color: var(--text-muted);
+	cursor: pointer; transition: all 0.15s; background: #fff;
+}
+.cause-chip:hover { border-color: var(--primary); color: var(--primary); }
+.cause-chip.selected { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+/* ── Club Badge ──────────────────────────────── */
+.club-badge {
+	display: flex; align-items: flex-start; gap: 12px;
+	background: rgba(60,200,143,0.07); border: 1px solid rgba(60,200,143,0.2);
+	border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;
+}
+.club-badge-icon { color: var(--primary); flex-shrink: 0; margin-top: 2px; }
+.club-badge-title { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.club-badge-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+/* ── Club Summary (combined causes) ─────────────── */
+.club-causes-list {
+	display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;
+}
+
+.club-cause-row {
+	display: flex; justify-content: space-between; align-items: center;
+	padding: 10px 14px;
+	background: #f9fafb; border-radius: 8px;
+	border: 1px solid #f0f0f0;
+	font-size: 13px;
+}
+
+.club-cause-name { font-weight: 600; color: var(--text); }
+.club-cause-amount { color: var(--primary); font-weight: 700; white-space: nowrap; }
+
+.cause-meta-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.cause-meta-chip {
+	font-size: 11px; padding: 2px 8px; border-radius: 20px;
+	background: #f3f4f6; color: #6b7280; font-weight: 500;
+}
+.cause-meta-chip.pending { background: #fef3c7; color: #92400e; }
+.cause-meta-chip.ok { background: #d1fae5; color: #065f46; }
+
+.club-total-row {
+	display: flex; justify-content: space-between; align-items: center;
+	padding: 10px 14px;
+	background: rgba(60,200,143,0.08); border-radius: 8px;
+	border: 1.5px solid rgba(60,200,143,0.2);
+	font-size: 14px; font-weight: 700; color: var(--text);
+	margin-top: 4px;
+}
+
+.club-total-row .total-val { color: var(--primary); font-size: 16px; }
+
+/* ── Month Grid ──────────────────────────────── */
+.month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+.custom-months-input::-webkit-inner-spin-button,
+.custom-months-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.month-option {
+	padding: 14px 8px; border-radius: var(--radius);
+	border: 1.5px solid var(--border); background: #fff;
+	cursor: pointer; text-align: center; transition: all 0.15s;
+}
+.month-option:hover { border-color: var(--primary); background: rgba(60,200,143,0.04); }
+.month-option.selected { border-color: var(--primary); background: rgba(60,200,143,0.08); }
+.month-option .mo-count { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
+.month-option .mo-amount { font-size: 15px; font-weight: 700; color: var(--text); }
+.month-option.selected .mo-amount { color: var(--primary); }
+.month-note { font-size: 12px; color: var(--text-muted); text-align: center; padding: 6px 0 4px; }
+
+/* ── ID Proof optional notice ─────────────────── */
+.id-optional-notice {
+	background: #fffbeb;
+	border: 1px solid #fde68a;
+	border-radius: 10px;
+	padding: 14px 16px;
+	margin-top: 14px;
+	font-size: 13px;
+	color: #78350f;
+	line-height: 1.5;
+}
+
+.id-optional-notice strong { color: #92400e; }
+.id-optional-notice a { color: #b45309; font-weight: 600; text-decoration: underline; }
+
+/* ── Donor card (logged-in) ──────────────────── */
+.donor-card {
+	display: flex; align-items: center; gap: 14px;
+	border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px;
+	background: #fafafa; margin-bottom: 16px;
+}
+
+.donor-card-avatar {
+	width: 44px; height: 44px; border-radius: 50%;
+	background: var(--primary); color: #fff;
+	display: flex; align-items: center; justify-content: center;
+	font-weight: 700; font-size: 18px; flex-shrink: 0;
+}
+
+.donor-card-info { flex: 1; min-width: 0; }
+.donor-card-info h4 { font-weight: 600; font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.donor-card-info p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+.donor-card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.meta-chip { background: #f3f4f6; color: #6b7280; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+.donor-card-link { font-size: 13px; font-weight: 600; color: var(--primary); text-decoration: none; white-space: nowrap; }
+
+/* ── No campaigns ────────────────────────────── */
+.no-campaigns {
+	text-align: center; padding: 80px 40px;
+	background: #fff; border-radius: var(--radius-lg);
+}
+.no-campaigns h3 { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--text); margin-bottom: 8px; }
+.no-campaigns p { color: var(--text-muted); font-size: 14px; }
+
+/* ── Custom amount ───────────────────────────── */
+.custom-amount-wrapper {
+	position: relative; display: flex; align-items: center;
+	margin-top: 10px;
+}
+.currency-symbol {
+	position: absolute; left: 14px;
+	font-size: 15px; font-weight: 600; color: var(--text-muted);
+}
+.custom-amount-input {
+	width: 100%; padding: 11px 14px 11px 30px;
+	border: 1.5px solid var(--border); border-radius: var(--radius);
+	font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text);
+	transition: border-color 0.15s; background: #fff;
+}
+.custom-amount-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(60,200,143,0.12); }
+
+/* ── Mobile ──────────────────────────────────── */
+@media (max-width: 900px) {
+	.donate-inner { grid-template-columns: 1fr; }
+	.hero-panel { position: static; height: auto; padding: 40px 24px 32px; }
+	.hero-title { font-size: 34px; }
+	.form-panel { padding: 24px 20px 48px; }
+	.form-section { padding: 20px; }
+	.amount-grid { grid-template-columns: repeat(3, 1fr); }
+	.form-grid { grid-template-columns: 1fr; }
+	.form-group.span-2 { grid-column: auto; }
+	.donation-type-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 480px) {
+	.amount-grid { grid-template-columns: repeat(2, 1fr); }
+	.donation-type-grid { grid-template-columns: 1fr; }
+	.month-grid { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
 {% endblock %}
 
 {% block page_content %}
-<div class="donation-page">
-	<div class="bg-animation"><div class="circle"></div><div class="circle"></div><div class="circle"></div></div>
-	<div class="donation-container">
-		<div class="donation-header">
-			<div class="logo-icon">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+<div class="donate-page">
+<div class="donate-inner">
+
+	<!-- ═══ LEFT: Hero Panel ═══ -->
+	<div class="hero-panel">
+		<div class="hero-logo">WCWW</div>
+		<p class="hero-tagline">Every Rupee Counts</p>
+		<h1 class="hero-title">Give with<br><em>Purpose.</em><br>Change Lives.</h1>
+		<p class="hero-desc">Your generosity directly funds education, healthcare, and community programmes across India. 100% transparent. Every donation tracked.</p>
+		<div class="hero-stat">
+			<div class="hero-stat-number">1000+</div>
+			<div class="hero-stat-label">Donors have<br>trusted us</div>
+		</div>
+		<div class="trust-row">
+			<div class="trust-item">
+				<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+				256-bit SSL
 			</div>
-			<h1>Make a Difference</h1>
-			<p>Your generosity creates ripples of change. Every contribution, big or small, helps us build a better tomorrow.</p>
+			<div class="trust-item">
+				<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+				80G Receipts
+			</div>
+			<div class="trust-item">
+				<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+				Razorpay Secured
+			</div>
+		</div>
+	</div>
+
+	<!-- ═══ RIGHT: Form Panel ═══ -->
+	<div class="form-panel">
+
+		{% if causes %}
+		<div class="steps-indicator">
+			<div class="step active" data-step="1"><span class="step-number">1</span><span>Type</span></div>
+			<div class="step-divider"></div>
+			<div class="step" data-step="2"><span class="step-number">2</span><span>Amount</span></div>
+			<div class="step-divider"></div>
+			<div class="step" data-step="3"><span class="step-number">3</span><span>Details</span></div>
+			<div class="step-divider"></div>
+			<div class="step" data-step="4"><span class="step-number">4</span><span>Payment</span></div>
 		</div>
 
-		{% if campaigns %}
-		<div class="donation-card">
-			<div class="steps-indicator">
-				<div class="step active" data-step="1"><span class="step-number">1</span><span class="step-text">Amount</span></div>
-				<div class="step-divider"></div>
-				<div class="step" data-step="2"><span class="step-number">2</span><span class="step-text">Details</span></div>
-				<div class="step-divider"></div>
-				<div class="step" data-step="3"><span class="step-number">3</span><span class="step-text">Payment</span></div>
-			</div>
+		<form id="donation-form">
 
-			<form id="donation-form">
-				{% if campaigns|length > 1 %}
-				<div class="campaign-section">
-					<h2 class="section-title">Choose a Cause</h2>
-					<p class="section-subtitle">Select the campaign you'd like to support</p>
-					<div class="campaign-grid">
-						{% for campaign in campaigns %}
-						<div class="campaign-card {% if campaign.is_default %}selected{% endif %}" data-campaign="{{ campaign.name }}" data-minimum="{{ campaign.minimum_amount or 100 }}" data-suggested="{{ campaign.suggested_amounts or '500,1000,2500,5000,10000' }}">
-							<div class="campaign-check"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-							<h3 class="campaign-name">{{ campaign.campaign_name }}</h3>
-							{% if campaign.description %}<p class="campaign-desc">{{ campaign.description|striptags|truncate(80) }}</p>{% endif %}
-							{% if campaign.target_amount %}
-							<div class="campaign-progress-wrapper"><div class="campaign-progress-bar"><div class="campaign-progress-fill" style="width: {{ [((campaign.collected_amount or 0) / campaign.target_amount * 100), 100]|min|int }}%"></div></div></div>
-							<div class="campaign-stats"><span class="campaign-stat"><strong>₹{{ "{:,.0f}".format(campaign.collected_amount or 0) }}</strong> raised</span><span class="campaign-stat"><strong>{{ campaign.donor_count or 0 }}</strong> donors</span></div>
-							{% endif %}
-						</div>
+		<!-- ── STEP 1: Donation Type ── -->
+		<div class="form-section" id="step-type">
+			<div class="section-heading">How would you like to donate?</div>
+			<p class="section-sub">Choose one-time or set up a monthly club contribution</p>
+			<div class="donation-type-grid">
+				<div class="dtype-card" id="dtype-onetime" onclick="selectDonationType('onetime')">
+					<div class="dtype-check">
+						<svg width="10" height="10" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+					</div>
+					<div class="dtype-icon">💝</div>
+					<div class="dtype-title">One-Time Donation</div>
+					<div class="dtype-sub">Make a single contribution of any amount</div>
+				</div>
+				<div class="dtype-card" id="dtype-club" onclick="selectDonationType('club')">
+					<div class="dtype-check">
+						<svg width="10" height="10" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+					</div>
+					<div class="dtype-icon">🔄</div>
+					<div class="dtype-title">Club Donation</div>
+					<div class="dtype-sub">Monthly subscription — support a cause every month</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- ── STEP 2: Amount (shown after type selected) ── -->
+		<div id="step-amount" style="display:none;">
+
+			<!-- Panel: One-Time -->
+			<div id="panel-onetime" style="display:none;">
+				<div class="form-section">
+					<div class="section-heading">Choose a Cause <span class="req">*</span></div>
+					<p class="section-sub">Select the cause your donation will support</p>
+					<div class="cause-chips" id="cause-chips-onetime">
+						{% for c in causes %}
+						<div class="cause-chip" data-cause="{{ c.name }}">{{ c.cause }}</div>
 						{% endfor %}
 					</div>
+					<input type="hidden" id="selected-cause-onetime" value="">
 				</div>
+
+				<div class="form-section">
+					<div class="section-heading">Select Amount</div>
+					<div class="error-alert" id="error-message-onetime">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+						<span></span>
+					</div>
+					<div class="amount-grid" id="onetime-preset-grid">
+						<div class="amount-option" data-amount="500"><div class="amount-value">₹500</div></div>
+						<div class="amount-option popular" data-amount="1000"><div class="amount-value">₹1,000</div></div>
+						<div class="amount-option" data-amount="2500"><div class="amount-value">₹2,500</div></div>
+						<div class="amount-option" data-amount="5000"><div class="amount-value">₹5,000</div></div>
+						<div class="amount-option" data-amount="10000"><div class="amount-value">₹10,000</div></div>
+						<div class="amount-option" data-amount="25000"><div class="amount-value">₹25,000</div></div>
+					</div>
+					<div class="custom-amount-wrapper">
+						<span class="currency-symbol">₹</span>
+						<input type="number" id="onetime-custom-amount" class="custom-amount-input" placeholder="Custom amount" min="1">
+					</div>
+				</div>
+			</div>
+
+			<!-- Panel: Club (returning donor with clubs) -->
+			<div id="panel-club-existing" style="display:none;">
+				<div id="next-payment-banner" style="display:none;" class="form-section" style="margin-bottom:8px;">
+					<div style="display:flex;align-items:flex-start;gap:12px;padding:16px;background:linear-gradient(135deg,#fff8e8,#fffbf0);border:1.5px solid #f59e0b;border-radius:12px;">
+						<span style="font-size:22px;flex-shrink:0;">📅</span>
+						<div>
+							<div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:4px;">Next Payment Due</div>
+							<div id="next-payment-text" style="font-size:14px;color:#78350f;line-height:1.5;"></div>
+						</div>
+					</div>
+				</div>
+				<div class="form-section">
+					<div class="section-heading">Your Club Memberships</div>
+					<p class="section-sub" id="club-existing-sub">Select how many months you'd like to contribute</p>
+					<div class="club-causes-list" id="club-causes-display"></div>
+					<div id="club-month-grid-wrapper">
+						<p class="section-sub" style="margin-bottom:10px;">Number of months</p>
+						<div class="month-grid" id="club-month-grid"></div>
+						<div class="month-note" id="club-month-note"></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Panel: Club (new donor / no clubs yet) -->
+			<div id="panel-club-new" style="display:none;">
+				<div class="form-section">
+					<div class="section-heading">Choose a Cause <span class="req">*</span></div>
+					<p class="section-sub">Select the cause for your monthly contribution</p>
+					<div class="cause-chips" id="cause-chips-club">
+						{% for c in causes %}
+						<div class="cause-chip" data-cause="{{ c.name }}">{{ c.cause }}</div>
+						{% endfor %}
+					</div>
+					<input type="hidden" id="selected-cause-club" value="">
+				</div>
+				<div class="form-section">
+					<div class="section-heading">Monthly Amount &amp; Duration</div>
+					<p class="section-sub">How many months would you like to contribute?</p>
+					<div class="month-grid" id="new-club-months-grid"></div>
+					<p class="section-sub" style="margin-top:16px;margin-bottom:10px;">Monthly contribution amount</p>
+					<div class="amount-grid" id="new-club-amount-grid">
+						<div class="amount-option" data-amount="300"><div class="amount-value">₹300</div></div>
+						<div class="amount-option popular" data-amount="500"><div class="amount-value">₹500</div></div>
+						<div class="amount-option" data-amount="1000"><div class="amount-value">₹1,000</div></div>
+						<div class="amount-option" data-amount="1500"><div class="amount-value">₹1,500</div></div>
+						<div class="amount-option" data-amount="2500"><div class="amount-value">₹2,500</div></div>
+						<div class="amount-option" data-amount="5000"><div class="amount-value">₹5,000</div></div>
+					</div>
+					<div class="custom-amount-wrapper">
+						<span class="currency-symbol">₹</span>
+						<input type="number" id="new-club-custom-amount" class="custom-amount-input" placeholder="Custom monthly amount" min="100">
+					</div>
+					<div class="month-note" id="new-club-note"></div>
+				</div>
+			</div>
+
+		</div>
+
+		<!-- Club Donation History (shown if past club donations exist) -->
+		<div id="club-donation-history" class="form-section" style="display:none;">
+			<div class="section-heading">Your Recent Club Donations</div>
+			<div id="club-history-list"></div>
+			<div style="text-align:center;margin-top:12px;">
+				<a href="/donor-portal" id="club-history-more" style="display:none;font-size:13px;font-weight:600;color:#3cc88f;text-decoration:none;">View all in portal →</a>
+			</div>
+		</div>
+
+		<!-- ── STEP 3: Donor Details ── -->
+		<div class="form-section" id="step-details" style="display:none;">
+			<div class="error-alert" id="error-message">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+				<span class="error-alert-text"></span>
+			</div>
+
+			{% if logged_in_donor %}
+			<!-- ── Logged-in donor: show card, only ask for missing fields ── -->
+			<div class="section-heading">Donating As</div>
+			<p class="section-sub">Details from your donor account</p>
+			<input type="hidden" id="full_name" value="{{ logged_in_donor.full_name }}">
+			<input type="hidden" id="id_type" value="{{ logged_in_donor.id_type or '' }}">
+			<input type="hidden" id="id_number" value="{{ logged_in_donor.id_number or '' }}">
+
+			<div class="donor-card">
+				<div class="donor-card-avatar">{{ (logged_in_donor.full_name or 'D')[0] }}</div>
+				<div class="donor-card-info">
+					<h4>{{ logged_in_donor.full_name }}</h4>
+					<p>{{ logged_in_donor.email or logged_in_donor.mobile or '' }}</p>
+					<div class="donor-card-meta">
+						{% if logged_in_donor.id_type and logged_in_donor.id_number %}
+						<span class="meta-chip">{{ logged_in_donor.id_type }}: {{ logged_in_donor.id_number }}</span>
+						{% endif %}
+						{% if logged_in_donor.is_club_donor %}<span class="meta-chip">Club Member</span>{% endif %}
+					</div>
+				</div>
+				<a href="/donor-portal" class="donor-card-link">My Portal →</a>
+			</div>
+
+			<!-- Only show fields that are actually missing from the donor record -->
+			<div class="form-grid" style="margin-top:16px;">
+				{% if logged_in_donor.email %}
+				<input type="hidden" id="email" value="{{ logged_in_donor.email }}">
 				{% else %}
-				<input type="hidden" id="campaign" value="{{ campaigns[0].name }}">
+				<div class="form-group">
+					<label class="form-label">Email <span class="opt">(Optional)</span></label>
+					<input type="email" id="email" class="form-input" placeholder="you@email.com">
+				</div>
 				{% endif %}
 
-				<div class="amount-section">
-					<h2 class="section-title">Select Amount</h2>
-					<p class="section-subtitle">Choose a preset amount or enter your own</p>
-					<div class="error-alert" id="error-message">
-						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-						<span class="error-alert-text"></span>
-					</div>
-					<div class="amount-grid" id="amount-grid">
-						{% set amounts = (default_campaign.suggested_amounts or '500,1000,2500,5000,10000').split(',') %}
-						{% for amount in amounts %}
-						<div class="amount-option {% if loop.index == 2 %}popular{% endif %}" data-amount="{{ amount|trim }}">
-							<div class="amount-value">₹{{ "{:,}".format(amount|trim|int) }}</div>
-						</div>
-						{% endfor %}
-					</div>
-					<div class="custom-amount-container">
-						<label class="custom-amount-label">Or enter custom amount</label>
-						<div class="custom-amount-input-wrapper">
-							<input type="number" id="amount" class="custom-amount-input" placeholder="0" min="{{ default_campaign.minimum_amount or 100 }}">
-							<span class="currency-prefix">₹</span>
-						</div>
-					</div>
+				{% if logged_in_donor.mobile %}
+				<input type="hidden" id="mobile" value="{{ logged_in_donor.mobile }}">
+				{% else %}
+				<div class="form-group">
+					<label class="form-label">Mobile <span class="opt">(Optional)</span></label>
+					<input type="tel" id="mobile" class="form-input" placeholder="+91 98765 43210">
 				</div>
+				{% endif %}
+			</div>
 
-				<div class="donor-section">
-					<h2 class="section-title">Your Information</h2>
-					<p class="section-subtitle">Please provide your details for the donation receipt</p>
-					<div class="form-grid">
-						<div class="form-group">
-							<label class="form-label">Name <span class="required">*</span></label>
-							<input type="text" id="full_name" class="form-input" placeholder="Enter your full name" required>
-						</div>
-						<div class="form-group">
-							<label class="form-label">ID Type <span class="required">*</span></label>
-							<select id="id_type" class="form-input" required>
-								<option value="">Select ID Type</option>
-								<option value="PAN Card">PAN Card</option>
-								<option value="Aadhar Card">Aadhar Card</option>
-							</select>
-						</div>
-						<div class="form-group">
-							<label class="form-label">ID Number <span class="required">*</span></label>
-							<input type="text" id="id_number" class="form-input" placeholder="Enter your ID number" required style="text-transform: uppercase;">
-						</div>
-						<div class="form-group">
-							<label class="form-label">Email ID <span class="optional">(Optional)</span></label>
-							<input type="email" id="email" class="form-input" placeholder="example@email.com">
-						</div>
-						<div class="form-group">
-							<label class="form-label">Contact Number <span class="optional">(Optional)</span></label>
-							<input type="tel" id="mobile" class="form-input" placeholder="+91 98765 43210">
-						</div>
-						<div class="form-group full-width">
-							<label class="form-label">Message <span class="optional">(Optional)</span></label>
-							<textarea id="message" class="form-input" placeholder="Share a few words about why you're donating..."></textarea>
-						</div>
-						<div class="form-group full-width">
-							<label class="checkbox-wrapper">
-								<div class="custom-checkbox">
-									<input type="checkbox" id="is_anonymous">
-									<span class="checkbox-mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-								</div>
-								<span class="checkbox-text"><strong>Make my donation anonymous</strong> - Your name won't be displayed publicly</span>
-							</label>
-						</div>
-						<div class="form-group full-width">
-							<label class="checkbox-wrapper">
-								<div class="custom-checkbox">
-									<input type="checkbox" id="is_club_donation">
-									<span class="checkbox-mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
-								</div>
-								<span class="checkbox-text"><strong>Club Donation / Subscription</strong> - Email ID will be required for club communications</span>
-							</label>
-						</div>
-					</div>
-				</div>
+			<div class="form-group" style="margin-top:12px;">
+				<label class="form-label">Message <span class="opt">(Optional)</span></label>
+				<textarea id="message" class="form-input" placeholder="A few words about your donation..."></textarea>
+			</div>
+			<div style="margin-top:12px;">
+				<label class="check-row">
+					<div class="custom-checkbox"><input type="checkbox" id="is_anonymous"><span class="checkbox-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div>
+					<span class="check-text"><strong>Anonymous donation</strong> — your name won't be shown publicly</span>
+				</label>
+			</div>
 
-				<div class="submit-section">
-					<div class="donation-summary">
-						<div class="summary-row"><span class="summary-label">Campaign</span><span class="summary-value" id="summary-campaign">{{ default_campaign.campaign_name if default_campaign else 'General' }}</span></div>
-						<div class="summary-row"><span class="summary-label">Donor</span><span class="summary-value" id="summary-donor">-</span></div>
-						<div class="summary-row total"><span class="summary-label">Total Amount</span><span class="summary-value" id="summary-amount">₹0</span></div>
+			{% else %}
+			<!-- ── Guest donor: two states ── -->
+
+			<!-- State 1: Default form (all fields) — hidden after donor is identified -->
+			<div id="guest-details-default">
+				<div class="section-heading">Your Information</div>
+				<p class="section-sub">Enter your details for the donation receipt</p>
+				<div class="form-grid">
+					<div class="form-group span-2">
+						<label class="form-label">Full Name <span class="req">*</span></label>
+						<input type="text" id="full_name" class="form-input" placeholder="As per your ID document" required>
 					</div>
-					<button type="submit" class="donate-button" id="donate-btn">
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-						<span id="btn-text">Complete Donation</span>
-					</button>
-					<div class="secure-badge">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-						Secured by 256-bit SSL encryption • Powered by Razorpay
+
+					<div class="form-group">
+						<label class="form-label" id="email-label">Email <span id="email-req-marker" class="opt">(Optional)</span></label>
+						<input type="email" id="email" class="form-input" placeholder="you@email.com">
+					</div>
+					<div class="form-group">
+						<label class="form-label">Mobile <span class="opt">(Optional)</span></label>
+						<input type="tel" id="mobile" class="form-input" placeholder="+91 98765 43210">
+					</div>
+
+					<!-- ID proof — optional with notice -->
+					<div class="form-group">
+						<label class="form-label">ID Type <span class="opt">(Optional)</span></label>
+						<select id="id_type" class="form-input">
+							<option value="">No ID (TDS will apply)</option>
+							<option value="PAN Card">PAN Card</option>
+							<option value="Aadhar Card">Aadhar Card</option>
+						</select>
+					</div>
+					<div class="form-group" id="id-number-group" style="display:none;">
+						<label class="form-label" id="id-number-label">ID Number <span class="req">*</span></label>
+						<input type="text" id="id_number" class="form-input" placeholder="Enter ID number" style="text-transform:uppercase;">
+					</div>
+
+					<div class="form-group span-2" id="id-optional-notice-wrapper">
+						<div class="id-optional-notice">
+							<strong>Did you know?</strong> Under the Income Tax Act, donations without a valid PAN are subject to
+							<strong>30% TDS (Tax Deducted at Source)</strong> — meaning only ₹70 of every ₹100 reaches us.
+							By sharing your PAN, 100% of your donation goes to the cause, and you also get an
+							<strong>80G tax deduction certificate</strong>.
+							<a href="https://incometaxindia.gov.in/pages/acts/income-tax-act.aspx" target="_blank" rel="noopener">View Government Rule →</a>
+						</div>
 					</div>
 				</div>
-			</form>
+			</div>
+
+			<!-- State 2: Identified donor card — shown after lookup finds a match -->
+			<div id="guest-details-found" style="display:none;">
+				<div class="section-heading">Donating As</div>
+				<p class="section-sub">We found your donor account</p>
+				<div class="donor-card" id="found-donor-card">
+					<!-- populated by JS -->
+				</div>
+				<!-- Only missing fields (email/mobile) shown here — populated by JS -->
+				<div class="form-grid" id="found-missing-fields" style="margin-top:14px;"></div>
+				<p style="margin-top:10px;font-size:12px;color:#6b7280;">
+					Not you?
+					<a href="#" id="reset-donor-link" style="color:var(--primary);text-decoration:none;font-weight:600;">Use different details</a>
+				</p>
+			</div>
+
+			<!-- Common bottom fields (always visible in guest mode) -->
+			<div class="form-group" style="margin-top:14px;">
+				<label class="form-label">Message <span class="opt">(Optional)</span></label>
+				<textarea id="message" class="form-input" placeholder="A few words about your donation..."></textarea>
+			</div>
+			<div style="margin-top:12px;">
+				<label class="check-row">
+					<div class="custom-checkbox"><input type="checkbox" id="is_anonymous"><span class="checkbox-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div>
+					<span class="check-text"><strong>Anonymous donation</strong> — your name won't be shown publicly</span>
+				</label>
+			</div>
+			{% endif %}
 		</div>
 
-		<div class="impact-section">
-			<div class="impact-card"><div class="impact-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div><div class="impact-number">1,000+</div><div class="impact-label">Donors Trust Us</div></div>
-			<div class="impact-card"><div class="impact-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div><div class="impact-number">₹10L+</div><div class="impact-label">Raised So Far</div></div>
-			<div class="impact-card"><div class="impact-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div><div class="impact-number">50+</div><div class="impact-label">Projects Funded</div></div>
-		</div>
+		<!-- ── STEP 4: Summary & Pay ── -->
+		<div class="form-section" id="step-pay" style="display:none;">
+			<div class="donation-summary">
+				<div class="summary-row" id="summary-type-row">
+					<span class="summary-label">Type</span>
+					<span class="summary-value" id="summary-type">—</span>
+				</div>
+				<div class="summary-row" id="summary-cause-row" style="display:none;">
+					<span class="summary-label">Cause</span>
+					<span class="summary-value" id="summary-cause">—</span>
+				</div>
+				<div class="summary-row">
+					<span class="summary-label">Donor</span>
+					<span class="summary-value" id="summary-donor">{% if logged_in_donor %}{{ logged_in_donor.full_name }}{% else %}—{% endif %}</span>
+				</div>
+				<div class="summary-row total">
+					<span class="summary-label">Total</span>
+					<span class="summary-value" id="summary-amount">₹0</span>
+				</div>
+			</div>
 
-		{% else %}
-		<div class="donation-card">
-			<div class="no-campaigns">
-				<div class="no-campaigns-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
-				<h3>No Active Campaigns</h3>
-				<p>We don't have any active donation campaigns at the moment. Please check back later or contact us for more information.</p>
+			<button type="submit" class="donate-button" id="donate-btn">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+				<span id="btn-text">Complete Donation</span>
+			</button>
+
+			<div class="secure-note">
+				<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+				Secured by 256-bit SSL · Powered by Razorpay
 			</div>
 		</div>
+
+		</form>
+
+		{% else %}
+		<div class="no-campaigns">
+			<h3>Coming Soon</h3>
+			<p>Donation causes are being configured. Please check back soon.</p>
+		</div>
 		{% endif %}
-	</div>
-</div>
+	</div><!-- /form-panel -->
+
+</div><!-- /donate-inner -->
+</div><!-- /donate-page -->
 {% endblock %}
 
 {% block script %}
@@ -355,160 +958,735 @@ document.addEventListener('DOMContentLoaded', function() {
 	const form = document.getElementById('donation-form');
 	if (!form) return;
 
-	const amountInput = document.getElementById('amount');
-	const amountGrid = document.getElementById('amount-grid');
-	const campaignCards = document.querySelectorAll('.campaign-card');
+	// ── Settings from server ──────────────────────────────────────
+	const ALLOW_AMOUNT_CHANGE = {{ allow_donor_amount_change }};
+	const IS_LOGGED_IN = {{ 'true' if logged_in_donor else 'false' }};
+
+	// ── State ──────────────────────────────────────────────────────
+	let donationType = null;        // 'onetime' | 'club'
+	let selectedAmount = 0;
+	let selectedMonths = 0;
+	let selectedMonthlyAmount = 0;
+	let selectedCause = '';
+	let clubStatusData = null;      // result of get_donor_club_status
+	let isExistingClubDonor = false;
+	let clubLookupTimer = null;
+	let combinedDonationIds = [];   // for combined club payments
+
+	// ── DOM refs ──────────────────────────────────────────────────
 	const donateBtn = document.getElementById('donate-btn');
 	const btnText = document.getElementById('btn-text');
-	const errorMessage = document.getElementById('error-message');
-	const errorText = errorMessage.querySelector('.error-alert-text');
+	const summaryDonor = document.getElementById('summary-donor');
+	const summaryAmount = document.getElementById('summary-amount');
+	const summaryType = document.getElementById('summary-type');
+	const summaryDonorRow = document.getElementById('summary-cause-row');
 	const fullNameInput = document.getElementById('full_name');
 	const idTypeSelect = document.getElementById('id_type');
 	const idNumberInput = document.getElementById('id_number');
-	const summaryCampaign = document.getElementById('summary-campaign');
-	const summaryDonor = document.getElementById('summary-donor');
-	const summaryAmount = document.getElementById('summary-amount');
+	const emailInput = document.getElementById('email');
+
 	const steps = document.querySelectorAll('.step');
 	const stepDividers = document.querySelectorAll('.step-divider');
 
-	let selectedAmount = 0;
-	let selectedCampaign = document.querySelector('.campaign-card.selected')?.dataset.campaign || document.getElementById('campaign')?.value || '';
-	let minimumAmount = parseInt(document.querySelector('.campaign-card.selected')?.dataset.minimum || 100);
-
-	const clubDonationCheckbox = document.getElementById('is_club_donation');
-	const emailInput = document.getElementById('email');
-	const emailLabel = emailInput.closest('.form-group').querySelector('.form-label');
-
-	clubDonationCheckbox.addEventListener('change', function() {
-		if (this.checked) {
-			emailLabel.innerHTML = 'Email ID <span class="required">*</span>';
-			emailInput.setAttribute('required', 'required');
-		} else {
-			emailLabel.innerHTML = 'Email ID <span class="optional">(Optional)</span>';
-			emailInput.removeAttribute('required');
-		}
-	});
-
-	idTypeSelect.addEventListener('change', function() {
-		if (this.value === 'PAN Card') idNumberInput.placeholder = 'ABCDE1234F';
-		else if (this.value === 'Aadhar Card') idNumberInput.placeholder = '123456789012';
-		else idNumberInput.placeholder = 'Enter your ID number';
-	});
-
-	function initAmountOptions() {
-		document.querySelectorAll('.amount-option').forEach(option => {
-			option.addEventListener('click', function() {
-				document.querySelectorAll('.amount-option').forEach(o => o.classList.remove('selected'));
-				this.classList.add('selected');
-				selectedAmount = parseInt(this.dataset.amount);
-				amountInput.value = selectedAmount;
-				updateSummary(); hideError(); updateSteps(1);
-			});
-		});
-	}
-	initAmountOptions();
-
-	amountInput.addEventListener('input', function() {
-		selectedAmount = parseInt(this.value) || 0;
-		document.querySelectorAll('.amount-option').forEach(o => o.classList.remove('selected'));
-		updateSummary(); hideError();
-		if (selectedAmount >= minimumAmount) updateSteps(1);
-	});
-
-	amountInput.addEventListener('focus', function() {
-		document.querySelectorAll('.amount-option').forEach(o => o.classList.remove('selected'));
-	});
-
-	campaignCards.forEach(card => {
-		card.addEventListener('click', function() {
-			campaignCards.forEach(c => c.classList.remove('selected'));
-			this.classList.add('selected');
-			selectedCampaign = this.dataset.campaign;
-			minimumAmount = parseInt(this.dataset.minimum) || 100;
-			summaryCampaign.textContent = this.querySelector('.campaign-name').textContent;
-			const suggestedAmounts = this.dataset.suggested.split(',');
-			amountGrid.innerHTML = suggestedAmounts.map((amt, i) => `<div class="amount-option ${i===1?'popular':''}" data-amount="${amt.trim()}"><div class="amount-value">₹${parseInt(amt.trim()).toLocaleString('en-IN')}</div></div>`).join('');
-			initAmountOptions();
-			amountInput.min = minimumAmount;
-			hideError();
-		});
-	});
-
-	fullNameInput.addEventListener('input', function() {
-		summaryDonor.textContent = this.value || '-';
-		if (this.value.trim()) updateSteps(2);
-	});
-
-	function updateSummary() { summaryAmount.textContent = selectedAmount > 0 ? `₹${selectedAmount.toLocaleString('en-IN')}` : '₹0'; }
-
-	function updateSteps(completedStep) {
+	// ── Step management ───────────────────────────────────────────
+	function setStep(n) {
 		steps.forEach((step, i) => {
-			if (i < completedStep) { step.classList.add('completed'); step.classList.remove('active'); }
-			else if (i === completedStep) { step.classList.add('active'); step.classList.remove('completed'); }
+			if (i < n) { step.classList.add('completed'); step.classList.remove('active'); }
+			else if (i === n) { step.classList.add('active'); step.classList.remove('completed'); }
 			else { step.classList.remove('active', 'completed'); }
 		});
-		stepDividers.forEach((divider, i) => { divider.classList.toggle('active', i < completedStep); });
+		stepDividers.forEach((d, i) => d.classList.toggle('active', i < n));
 	}
 
-	function showError(msg) { errorText.textContent = msg; errorMessage.classList.add('show'); errorMessage.scrollIntoView({behavior:'smooth',block:'center'}); }
-	function hideError() { errorMessage.classList.remove('show'); }
+	// ── STEP 1: Select donation type ──────────────────────────────
+	window.selectDonationType = function(type) {
+		donationType = type;
+		document.getElementById('dtype-onetime').classList.toggle('selected', type === 'onetime');
+		document.getElementById('dtype-club').classList.toggle('selected', type === 'club');
+
+		// Reset amount state
+		selectedAmount = 0; selectedMonths = 0; selectedMonthlyAmount = 0; selectedCause = '';
+		combinedDonationIds = [];
+
+		document.getElementById('step-amount').style.display = 'block';
+		document.getElementById('panel-onetime').style.display = 'none';
+		document.getElementById('panel-club-existing').style.display = 'none';
+		document.getElementById('panel-club-new').style.display = 'none';
+		document.getElementById('club-donation-history').style.display = 'none';
+		document.getElementById('step-details').style.display = 'none';
+		document.getElementById('step-pay').style.display = 'none';
+
+		if (type === 'onetime') {
+			document.getElementById('panel-onetime').style.display = 'block';
+			document.getElementById('step-details').style.display = 'block';
+			document.getElementById('step-pay').style.display = 'block';
+			if (summaryType) summaryType.textContent = 'One-Time Donation';
+		} else {
+			// Club: always call lookup (for logged-in users, no ID required)
+			lookupClubStatus();
+			if (summaryType) summaryType.textContent = 'Club / Monthly';
+		}
+
+		setStep(1);
+		updateSummary();
+		document.getElementById('step-amount').scrollIntoView({ behavior: 'smooth', block: 'start' });
+	};
+
+	// ── Cause chips — One-time ─────────────────────────────────────
+	document.querySelectorAll('#cause-chips-onetime .cause-chip').forEach(chip => {
+		chip.addEventListener('click', function() {
+			document.querySelectorAll('#cause-chips-onetime .cause-chip').forEach(c => c.classList.remove('selected'));
+			this.classList.add('selected');
+			selectedCause = this.dataset.cause;
+			document.getElementById('selected-cause-onetime').value = selectedCause;
+			const causeRow = document.getElementById('summary-cause-row');
+			const causeSummary = document.getElementById('summary-cause');
+			if (causeRow) causeRow.style.display = '';
+			if (causeSummary) causeSummary.textContent = this.textContent.trim();
+			setStep(2);
+		});
+	});
+
+	// ── Cause chips — New Club ─────────────────────────────────────
+	document.querySelectorAll('#cause-chips-club .cause-chip').forEach(chip => {
+		chip.addEventListener('click', function() {
+			document.querySelectorAll('#cause-chips-club .cause-chip').forEach(c => c.classList.remove('selected'));
+			this.classList.add('selected');
+			selectedCause = this.dataset.cause;
+			document.getElementById('selected-cause-club').value = selectedCause;
+			updateNewClubNote();
+		});
+	});
+
+	// ── One-time amount presets ────────────────────────────────────
+	document.querySelectorAll('#onetime-preset-grid .amount-option').forEach(opt => {
+		opt.addEventListener('click', function() {
+			document.querySelectorAll('#onetime-preset-grid .amount-option').forEach(o => o.classList.remove('selected'));
+			this.classList.add('selected');
+			selectedAmount = parseInt(this.dataset.amount);
+			document.getElementById('onetime-custom-amount').value = '';
+			updateSummary(); hideError();
+			setStep(2);
+		});
+	});
+
+	const onetimeCustom = document.getElementById('onetime-custom-amount');
+	if (onetimeCustom) {
+		onetimeCustom.addEventListener('input', function() {
+			document.querySelectorAll('#onetime-preset-grid .amount-option').forEach(o => o.classList.remove('selected'));
+			selectedAmount = parseInt(this.value) || 0;
+			updateSummary(); hideError();
+		});
+	}
+
+	// ── New Club: month grid ───────────────────────────────────────
+	function buildNewClubMonthGrid() {
+		const grid = document.getElementById('new-club-months-grid');
+		if (!grid || grid._built) return;
+		let html = '';
+		for (let m = 1; m <= 6; m++) {
+			html += `<div class="month-option" data-months="${m}">
+				<div class="mo-count">${m} month${m > 1 ? 's' : ''}</div>
+				<div class="mo-amount" id="ncm-${m}">—</div>
+			</div>`;
+		}
+		// Custom month option
+		html += `<div class="month-option" id="ncm-custom-opt" data-months="0">
+			<div class="mo-count">Custom</div>
+			<input type="number" id="ncm-custom-input" class="custom-months-input"
+				placeholder="?" min="1" max="60"
+				onclick="event.stopPropagation()"
+				style="width:100%;border:none;background:transparent;text-align:center;font-size:15px;font-weight:700;color:inherit;outline:none;padding:0;">
+		</div>`;
+		grid.innerHTML = html;
+		grid.querySelectorAll('.month-option').forEach(opt => {
+			opt.addEventListener('click', function() {
+				grid.querySelectorAll('.month-option').forEach(o => o.classList.remove('selected'));
+				this.classList.add('selected');
+				const m = parseInt(this.dataset.months);
+				if (!isNaN(m) && m > 0) { selectedMonths = m; updateNewClubNote(); }
+			});
+		});
+		const customInput = document.getElementById('ncm-custom-input');
+		if (customInput) {
+			customInput.addEventListener('input', function() {
+				const v = parseInt(this.value);
+				if (v > 0) {
+					grid.querySelectorAll('.month-option').forEach(o => o.classList.remove('selected'));
+					document.getElementById('ncm-custom-opt').classList.add('selected');
+					selectedMonths = v;
+					updateNewClubNote();
+				}
+			});
+		}
+		grid._built = true;
+	}
+	buildNewClubMonthGrid();
+
+	document.querySelectorAll('#new-club-amount-grid .amount-option').forEach(opt => {
+		opt.addEventListener('click', function() {
+			document.querySelectorAll('#new-club-amount-grid .amount-option').forEach(o => o.classList.remove('selected'));
+			this.classList.add('selected');
+			selectedMonthlyAmount = parseInt(this.dataset.amount);
+			document.getElementById('new-club-custom-amount').value = '';
+			updateNewClubNote();
+		});
+	});
+
+	const newClubCustom = document.getElementById('new-club-custom-amount');
+	if (newClubCustom) {
+		newClubCustom.addEventListener('input', function() {
+			document.querySelectorAll('#new-club-amount-grid .amount-option').forEach(o => o.classList.remove('selected'));
+			selectedMonthlyAmount = parseInt(this.value) || 0;
+			updateNewClubNote();
+		});
+	}
+
+	function updateNewClubNote() {
+		// Update month grid amounts
+		for (let m = 1; m <= 6; m++) {
+			const el = document.getElementById(`ncm-${m}`);
+			if (el) el.textContent = selectedMonthlyAmount > 0
+				? `₹${(selectedMonthlyAmount * m).toLocaleString('en-IN')}`
+				: '—';
+		}
+		selectedAmount = (selectedMonths > 0 && selectedMonthlyAmount > 0) ? selectedMonths * selectedMonthlyAmount : 0;
+		const note = document.getElementById('new-club-note');
+		if (note) {
+			note.textContent = selectedAmount > 0
+				? `₹${selectedAmount.toLocaleString('en-IN')} = ${selectedMonths} month${selectedMonths > 1 ? 's' : ''} × ₹${selectedMonthlyAmount.toLocaleString('en-IN')}/month`
+				: '';
+		}
+		updateSummary(); hideError();
+	}
+
+	// ── Club Detection / Lookup ───────────────────────────────────
+	async function lookupClubStatus() {
+		try {
+			let res;
+			let donorIdType = null, donorId = null;
+
+			if (IS_LOGGED_IN) {
+				// Logged-in: use session-based lookup — no ID required
+				res = await frappe.call({ method: 'techniti.api.get_logged_in_club_status' });
+			} else {
+				// Guest: require valid ID to look up
+				const idType = idTypeSelect ? idTypeSelect.value : '';
+				const idNumber = idNumberInput ? idNumberInput.value.trim().toUpperCase() : '';
+				const panOk = idType === 'PAN Card' && /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(idNumber);
+				const aadharOk = idType === 'Aadhar Card' && /^[2-9]\d{11}$/.test(idNumber);
+				if (!panOk && !aadharOk) {
+					if (donationType === 'club') showNewClubPanel();
+					return;
+				}
+				donorIdType = idType;
+				donorId = idNumber;
+				res = await frappe.call({
+					method: 'techniti.api.get_donor_club_status',
+					args: { id_type: donorIdType, id_number: donorId }
+				});
+			}
+
+			clubStatusData = res.message;
+
+			if (clubStatusData && clubStatusData.exists !== false) {
+				const activeClubs = (clubStatusData.clubs || []).filter(
+					c => c.status === 'Active' && parseFloat(c.monthly_club_amount) > 0
+				);
+
+				if (activeClubs.length > 0 && donationType === 'club') {
+					isExistingClubDonor = true;
+					showExistingClubPanel(activeClubs);
+				} else if (donationType === 'club') {
+					showNewClubPanel();
+				}
+
+				// Show club donation history if available
+				renderClubDonationHistory(clubStatusData.recent_donations || []);
+
+				// Guest: collapse form into a compact "Donating as" card, show only missing fields
+				if (!IS_LOGGED_IN && clubStatusData.full_name) {
+					_setHidden('full_name', clubStatusData.full_name);
+					_setHidden('id_type', donorIdType);
+					_setHidden('id_number', donorId);
+					_setHidden('email', clubStatusData.email || '');
+					_setHidden('mobile', clubStatusData.mobile || '');
+
+					const defEl = document.getElementById('guest-details-default');
+					const foundEl = document.getElementById('guest-details-found');
+					if (defEl) defEl.style.display = 'none';
+					if (foundEl) {
+						foundEl.style.display = 'block';
+						const card = document.getElementById('found-donor-card');
+						if (card) {
+							const initial = (clubStatusData.full_name || 'D')[0].toUpperCase();
+							const sub = clubStatusData.email || clubStatusData.mobile || '';
+							const idChip = donorIdType ? `<span class="meta-chip">${donorIdType}: ${donorId}</span>` : '';
+							card.innerHTML = `
+								<div class="donor-card-avatar">${initial}</div>
+								<div class="donor-card-info">
+									<h4>${clubStatusData.full_name}</h4>
+									${sub ? `<p>${sub}</p>` : ''}
+									<div class="donor-card-meta">${idChip}</div>
+								</div>`;
+						}
+						const missingEl = document.getElementById('found-missing-fields');
+						if (missingEl) {
+							let missingHtml = '';
+							if (!clubStatusData.email) {
+								missingHtml += `<div class="form-group">
+									<label class="form-label">Email <span class="opt">(Optional)</span></label>
+									<input type="email" id="email" class="form-input" placeholder="you@email.com"
+										oninput="document.getElementById('email-hidden')&&(document.getElementById('email-hidden').value=this.value)">
+								</div>`;
+							}
+							if (!clubStatusData.mobile) {
+								missingHtml += `<div class="form-group">
+									<label class="form-label">Mobile <span class="opt">(Optional)</span></label>
+									<input type="tel" id="mobile" class="form-input" placeholder="+91 98765 43210"
+										oninput="document.getElementById('mobile-hidden')&&(document.getElementById('mobile-hidden').value=this.value)">
+								</div>`;
+							}
+							missingEl.innerHTML = missingHtml;
+						}
+					}
+				}
+			} else {
+				isExistingClubDonor = false;
+				if (donationType === 'club') showNewClubPanel();
+			}
+		} catch (e) {
+			isExistingClubDonor = false;
+			if (donationType === 'club') showNewClubPanel();
+		}
+	}
+
+	function renderClubDonationHistory(donations) {
+		const histEl = document.getElementById('club-donation-history');
+		const listEl = document.getElementById('club-history-list');
+		const moreEl = document.getElementById('club-history-more');
+		if (!histEl || !listEl) return;
+		if (!donations || donations.length === 0) {
+			histEl.style.display = 'none';
+			return;
+		}
+		listEl.innerHTML = donations.map(d => {
+			const date = d.donation_date ? new Date(d.donation_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : '';
+			const months = d.number_of_months > 1 ? ` · ${d.number_of_months} months` : '';
+			const cause = d.cause ? `<span style="color:#666;font-size:12px;">${d.cause}</span>` : '';
+			return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;">
+				<div>${cause ? cause + '<br>' : ''}<span style="font-size:13px;color:#999;">${date}${months}</span></div>
+				<span style="font-weight:700;color:#3cc88f;font-size:15px;">₹${parseFloat(d.amount).toLocaleString('en-IN')}</span>
+			</div>`;
+		}).join('');
+		histEl.style.display = 'block';
+		if (moreEl) moreEl.style.display = 'block';
+	}
+
+	// Helper: set a hidden input value, or add one if visible input was replaced
+	function _setHidden(id, val) {
+		const el = document.getElementById(id);
+		if (!el) {
+			const h = document.createElement('input');
+			h.type = 'hidden'; h.id = id; h.value = val;
+			document.getElementById('donation-form').appendChild(h);
+		} else if (el.type === 'hidden') {
+			el.value = val;
+		}
+		// if it's a visible input, leave it — user may have typed in it already
+	}
+
+	// "Not you?" link resets back to default form
+	const resetLink = document.getElementById('reset-donor-link');
+	if (resetLink) {
+		resetLink.addEventListener('click', function(e) {
+			e.preventDefault();
+			clubStatusData = null; isExistingClubDonor = false;
+			const defEl = document.getElementById('guest-details-default');
+			const foundEl = document.getElementById('guest-details-found');
+			if (defEl) defEl.style.display = '';
+			if (foundEl) foundEl.style.display = 'none';
+			// Clear the ID fields so user can enter new ones
+			if (idTypeSelect) idTypeSelect.value = '';
+			if (idNumberInput) idNumberInput.value = '';
+			if (document.getElementById('id-number-group')) document.getElementById('id-number-group').style.display = 'none';
+			if (document.getElementById('id-optional-notice-wrapper')) document.getElementById('id-optional-notice-wrapper').style.display = '';
+			// Reset to new club panel
+			if (donationType === 'club') showNewClubPanel();
+		});
+	}
+
+	function showExistingClubPanel(activeClubs) {
+		document.getElementById('panel-club-existing').style.display = 'block';
+		document.getElementById('panel-club-new').style.display = 'none';
+		document.getElementById('step-details').style.display = 'block';
+		document.getElementById('step-pay').style.display = 'block';
+
+		const perMonthTotal = activeClubs.reduce((sum, c) => sum + parseFloat(c.monthly_club_amount), 0);
+		const maxPending = Math.max(...activeClubs.map(c => parseInt(c.pending_months || 0)), 0);
+		const totalPendingAmt = activeClubs.reduce((sum, c) => sum + parseFloat(c.pending_amount || 0), 0);
+
+		// Show next payment banner if there are pending months
+		const banner = document.getElementById('next-payment-banner');
+		const bannerText = document.getElementById('next-payment-text');
+		if (banner && maxPending > 0) {
+			banner.style.display = 'block';
+			// Find the earliest pending-from month across all causes
+			const pendingFromMonths = activeClubs
+				.filter(c => parseInt(c.pending_months || 0) > 0 && c.pending_from_month)
+				.map(c => c.pending_from_month);
+			const fromMonth = pendingFromMonths.length > 0 ? pendingFromMonths[0] : null;
+			let txt = `You have <strong>${maxPending} month${maxPending > 1 ? 's' : ''}</strong> of unpaid club dues`;
+			if (fromMonth) txt += ` starting from <strong>${fromMonth}</strong>`;
+			txt += `. Total due: <strong>₹${totalPendingAmt.toLocaleString('en-IN')}</strong>.`;
+			if (bannerText) bannerText.innerHTML = txt;
+		} else if (banner) {
+			banner.style.display = 'none';
+		}
+
+		// Render causes list with last donation + pending info
+		const causesList = document.getElementById('club-causes-display');
+		let causesHtml = activeClubs.map(c => {
+			const monthly = parseFloat(c.monthly_club_amount);
+			const pending = parseInt(c.pending_months || 0);
+			const pendingAmt = parseFloat(c.pending_amount || 0);
+			const lastDate = c.last_donation_date
+				? new Date(c.last_donation_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+				: null;
+
+			let metaHtml = '';
+			if (lastDate) {
+				metaHtml += `<span class="cause-meta-chip">Last paid: ${lastDate}</span>`;
+			}
+			if (pending > 0) {
+				const fromLabel = c.pending_from_month ? ` from ${c.pending_from_month}` : '';
+				metaHtml += `<span class="cause-meta-chip pending">⚠ ${pending} month${pending > 1 ? 's' : ''} pending${fromLabel} — ₹${pendingAmt.toLocaleString('en-IN')}</span>`;
+			} else {
+				metaHtml += `<span class="cause-meta-chip ok">✓ Up to date</span>`;
+			}
+
+			return `<div class="club-cause-row">
+				<div>
+					<span class="club-cause-name">${c.cause}</span>
+					<div class="cause-meta-row">${metaHtml}</div>
+				</div>
+				<span class="club-cause-amount">₹${monthly.toLocaleString('en-IN')}/mo</span>
+			</div>`;
+		}).join('');
+		causesHtml += `<div class="club-total-row">
+			<span>Total per month</span>
+			<span class="total-val">₹${perMonthTotal.toLocaleString('en-IN')}</span>
+		</div>`;
+		causesList.innerHTML = causesHtml;
+
+		// Render month grid with combined amounts
+		const grid = document.getElementById('club-month-grid');
+		let html = '';
+
+		for (let m = 1; m <= 6; m++) {
+			const total = Math.round(perMonthTotal * m);
+			html += `<div class="month-option" data-months="${m}" data-amount="${total}" data-monthly="${perMonthTotal}">
+				<div class="mo-count">${m} month${m > 1 ? 's' : ''}</div>
+				<div class="mo-amount">₹${total.toLocaleString('en-IN')}</div>
+			</div>`;
+		}
+		// Custom month option for existing club
+		html += `<div class="month-option" id="ecm-custom-opt" data-months="0" data-amount="0">
+			<div class="mo-count">Custom</div>
+			<input type="number" id="ecm-custom-input" class="custom-months-input"
+				placeholder="?" min="1" max="60"
+				onclick="event.stopPropagation()"
+				style="width:100%;border:none;background:transparent;text-align:center;font-size:15px;font-weight:700;color:inherit;outline:none;padding:0;">
+		</div>`;
+		grid.innerHTML = html;
+		grid.querySelectorAll('.month-option').forEach(opt => {
+			opt.addEventListener('click', function() {
+				grid.querySelectorAll('.month-option').forEach(o => o.classList.remove('selected'));
+				this.classList.add('selected');
+				const m = parseInt(this.dataset.months);
+				if (!isNaN(m) && m > 0) {
+					selectedMonths = m;
+					selectedAmount = Math.round(perMonthTotal * m);
+					const note = document.getElementById('club-month-note');
+					if (note) note.textContent = `₹${selectedAmount.toLocaleString('en-IN')} = ${m} month${m > 1 ? 's' : ''} × ₹${perMonthTotal.toLocaleString('en-IN')}/month`;
+					updateSummary(); hideError();
+					setStep(2);
+				}
+			});
+		});
+		const ecmInput = document.getElementById('ecm-custom-input');
+		if (ecmInput) {
+			ecmInput.addEventListener('input', function() {
+				const m = parseInt(this.value);
+				if (m > 0) {
+					grid.querySelectorAll('.month-option').forEach(o => o.classList.remove('selected'));
+					document.getElementById('ecm-custom-opt').classList.add('selected');
+					selectedMonths = m;
+					selectedAmount = Math.round(perMonthTotal * m);
+					const note = document.getElementById('club-month-note');
+					if (note) note.textContent = `₹${selectedAmount.toLocaleString('en-IN')} = ${m} month${m > 1 ? 's' : ''} × ₹${perMonthTotal.toLocaleString('en-IN')}/month`;
+					updateSummary(); hideError();
+					setStep(2);
+				}
+			});
+		}
+
+		// Auto-select pending months (if ≤ 6, else put in custom input)
+		if (maxPending > 0) {
+			if (maxPending <= 6) {
+				const autoOpt = grid.querySelector(`[data-months="${maxPending}"]`);
+				if (autoOpt) autoOpt.click();
+			} else {
+				if (ecmInput) { ecmInput.value = maxPending; ecmInput.dispatchEvent(new Event('input')); }
+			}
+		}
+
+		// Cause summary in summary bar
+		const causeRow = document.getElementById('summary-cause-row');
+		const causeSummary = document.getElementById('summary-cause');
+		if (causeRow) causeRow.style.display = '';
+		if (causeSummary) causeSummary.textContent = activeClubs.map(c => c.cause).join(', ');
+	}
+
+	function showNewClubPanel() {
+		document.getElementById('panel-club-existing').style.display = 'none';
+		document.getElementById('panel-club-new').style.display = 'block';
+		document.getElementById('step-details').style.display = 'block';
+		document.getElementById('step-pay').style.display = 'block';
+	}
+
+	// ── Guest: listen for ID type/number changes ───────────────────
+	if (idTypeSelect && idTypeSelect.tagName === 'SELECT') {
+		idTypeSelect.addEventListener('change', function() {
+			const idNumGroup = document.getElementById('id-number-group');
+			const noticeWrapper = document.getElementById('id-optional-notice-wrapper');
+			if (this.value) {
+				if (idNumGroup) idNumGroup.style.display = 'flex';
+				if (noticeWrapper) noticeWrapper.style.display = 'none';
+				if (idNumberInput) {
+					idNumberInput.value = '';
+					idNumberInput.placeholder = this.value === 'PAN Card' ? 'ABCDE1234F' : '123456789012';
+				}
+			} else {
+				if (idNumGroup) idNumGroup.style.display = 'none';
+				if (noticeWrapper) noticeWrapper.style.display = 'block';
+			}
+			if (donationType === 'club') {
+				clearTimeout(clubLookupTimer);
+				clubLookupTimer = setTimeout(lookupClubStatus, 600);
+			}
+		});
+	}
+
+	if (idNumberInput && idNumberInput.type !== 'hidden') {
+		idNumberInput.addEventListener('input', function() {
+			this.value = this.value.trim().toUpperCase();
+			if (donationType === 'club') {
+				clearTimeout(clubLookupTimer);
+				clubLookupTimer = setTimeout(lookupClubStatus, 700);
+			}
+		});
+	}
+
+	if (fullNameInput && fullNameInput.type !== 'hidden') {
+		fullNameInput.addEventListener('input', function() {
+			if (summaryDonor) summaryDonor.textContent = this.value || '—';
+		});
+	}
+
+	// Logged-in club auto-lookup
+	if (IS_LOGGED_IN && donationType === 'club') lookupClubStatus();
+
+	// ── Summary update ─────────────────────────────────────────────
+	function updateSummary() {
+		if (summaryAmount) summaryAmount.textContent = selectedAmount > 0
+			? `₹${selectedAmount.toLocaleString('en-IN')}` : '₹0';
+	}
+
+	// ── Error helpers ──────────────────────────────────────────────
+	const errorEl = document.getElementById('error-message');
+	const errorText = errorEl ? errorEl.querySelector('.error-alert-text') : null;
+
+	function showError(msg) {
+		if (!errorEl || !errorText) return;
+		errorText.textContent = msg;
+		errorEl.classList.add('show');
+		errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	}
+	function hideError() { if (errorEl) errorEl.classList.remove('show'); }
 
 	function setLoading(loading) {
 		donateBtn.disabled = loading;
-		btnText.innerHTML = loading ? '<div class="spinner"></div> Processing...' : 'Complete Donation';
+		btnText.innerHTML = loading
+			? '<div class="btn-spinner"></div> Processing...'
+			: 'Complete Donation';
 	}
 
+	// ── Form Submit ────────────────────────────────────────────────
 	form.addEventListener('submit', async function(e) {
-		e.preventDefault(); hideError();
+		e.preventDefault();
+		hideError();
+
 		const fullName = document.getElementById('full_name').value.trim();
-		const idType = document.getElementById('id_type').value;
-		const idNumber = document.getElementById('id_number').value.trim().toUpperCase();
-		const email = document.getElementById('email').value.trim();
-		const mobile = document.getElementById('mobile').value.trim();
-		const message = document.getElementById('message').value.trim();
+		const idType = document.getElementById('id_type') ? document.getElementById('id_type').value : '';
+		const idNumber = idNumberInput ? idNumberInput.value.trim().toUpperCase() : '';
+		const email = emailInput ? emailInput.value.trim() : '';
+		const mobile = (document.getElementById('mobile') || {}).value?.trim() || '';
+		const message = (document.getElementById('message') || {}).value?.trim() || '';
 		const isAnonymous = document.getElementById('is_anonymous').checked;
-		const isClubDonation = document.getElementById('is_club_donation').checked;
 
-		if (!selectedAmount || selectedAmount < minimumAmount) { showError(`Please select an amount of at least ₹${minimumAmount.toLocaleString('en-IN')}`); return; }
-		if (!fullName) { showError('Please enter your name'); document.getElementById('full_name').focus(); return; }
-		if (!idType) { showError('Please select an ID type (PAN Card or Aadhar Card)'); document.getElementById('id_type').focus(); return; }
-		if (!idNumber) { showError('Please enter your ID number'); document.getElementById('id_number').focus(); return; }
-		if (idType === 'PAN Card' && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(idNumber)) { showError('Please enter a valid PAN number (e.g., ABCDE1234F)'); document.getElementById('id_number').focus(); return; }
-		if (idType === 'Aadhar Card' && !/^\d{12}$/.test(idNumber.replace(/\s/g, ''))) { showError('Please enter a valid 12-digit Aadhar number'); document.getElementById('id_number').focus(); return; }
-		if (isClubDonation && !email) { showError('Email ID is required for Club Donation / Subscription'); document.getElementById('email').focus(); return; }
-		if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('Please enter a valid email address'); document.getElementById('email').focus(); return; }
+		// Validate
+		if (!donationType) { showError('Please choose a donation type'); return; }
+		if (!fullName) { showError('Please enter your name'); return; }
+		if (!selectedAmount || selectedAmount <= 0) { showError('Please select an amount'); return; }
 
-		updateSteps(3); setLoading(true);
+		// ID validation only if provided
+		if (idType === 'PAN Card' && idNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(idNumber)) {
+			showError('Invalid PAN format — should be like ABCDE1234F'); return;
+		}
+		if (idType === 'Aadhar Card' && idNumber && !/^[2-9]\d{11}$/.test(idNumber.replace(/\s/g, ''))) {
+			showError('Invalid Aadhar — must be 12 digits starting with 2–9'); return;
+		}
+
+		// Club donation requires email
+		if (donationType === 'club' && !email) {
+			showError('Email is required for Club Donation / Subscription'); return;
+		}
+		if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+			showError('Please enter a valid email address'); return;
+		}
+
+		// One-time requires a cause
+		if (donationType === 'onetime' && !selectedCause) {
+			showError('Please select a cause'); return;
+		}
+
+		// New club requires cause
+		if (donationType === 'club' && !isExistingClubDonor && !selectedCause) {
+			showError('Please select a cause for your club donation'); return;
+		}
+
+		setStep(3); setLoading(true);
+
 		try {
-			const response = await fetch('/api/method/techniti.api.create_donation_order', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
-				body: JSON.stringify({ amount: selectedAmount, campaign: selectedCampaign, full_name: fullName, email: email, mobile: mobile, id_type: idType, id_number: idNumber, message: message, is_anonymous: isAnonymous, is_club_donation: isClubDonation })
-			});
-			const data = await response.json();
-			if (data.message && data.message.order_id) {
-				const options = {
-					key: data.message.razorpay_key_id, amount: data.message.amount * 100, currency: 'INR',
-					name: 'TechNiti', description: 'Donation' + (selectedCampaign ? ' - ' + selectedCampaign : ''),
-					order_id: data.message.order_id,
-					prefill: { name: fullName, email: email, contact: mobile },
+			if (donationType === 'club' && isExistingClubDonor && clubStatusData) {
+				// ── Combined club payment ──────────────────────────────────
+				const response = await fetch('/api/method/techniti.api.create_combined_club_order', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
+					body: JSON.stringify({
+						months: selectedMonths,
+						full_name: fullName,
+						id_type: idType,
+						id_number: idNumber,
+						email, mobile, is_anonymous: isAnonymous
+					})
+				});
+				const data = await response.json();
+				if (!data.message || !data.message.order_id) {
+					showError(data.exception || 'Failed to create order.'); setLoading(false); setStep(2); return;
+				}
+				const od = data.message;
+				combinedDonationIds = od.donations || [];
+
+				const rzpOpts = {
+					key: od.razorpay_key_id,
+					amount: Math.round(od.total_amount * 100),
+					currency: 'INR',
+					name: 'WCWW',
+					description: `Club Donation — ${selectedMonths} month${selectedMonths > 1 ? 's' : ''}`,
+					order_id: od.order_id,
+					prefill: { name: od.donor_name, email: od.email, contact: od.mobile },
 					theme: { color: '#3cc88f' },
-					handler: async function(paymentResponse) {
+					handler: async function(pr) {
 						try {
-							const verifyResponse = await fetch('/api/method/techniti.api.verify_donation_payment', {
-								method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
-								body: JSON.stringify({ donation_id: data.message.donation_id, razorpay_payment_id: paymentResponse.razorpay_payment_id, razorpay_order_id: paymentResponse.razorpay_order_id, razorpay_signature: paymentResponse.razorpay_signature })
+							const vRes = await fetch('/api/method/techniti.api.handle_combined_club_callback', {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
+								body: JSON.stringify({
+									order_id: od.order_id,
+									razorpay_payment_id: pr.razorpay_payment_id,
+									razorpay_order_id: pr.razorpay_order_id,
+									razorpay_signature: pr.razorpay_signature
+								})
 							});
-							const verifyData = await verifyResponse.json();
-							if (verifyData.message && verifyData.message.success) { window.location.href = '/donation-success?id=' + data.message.donation_id; }
-							else { showError('Payment verification failed. Please contact support.'); setLoading(false); updateSteps(2); }
-						} catch (err) { showError('Payment verification failed. Please contact support.'); setLoading(false); updateSteps(2); }
+							const vData = await vRes.json();
+							if (vData.message && vData.message.success) {
+								window.location.href = '/donation-success?id=' + (vData.message.redirect_id || '');
+							} else {
+								showError('Payment verification failed. Please contact support.');
+								setLoading(false); setStep(2);
+							}
+						} catch (err) {
+							showError('Payment verification failed. Please contact support.');
+							setLoading(false); setStep(2);
+						}
 					},
-					modal: { ondismiss: function() { setLoading(false); updateSteps(2); } }
+					modal: { ondismiss: function() { setLoading(false); setStep(2); } }
 				};
-				const razorpay = new Razorpay(options); razorpay.open();
-			} else { showError(data.exception || data.exc || 'Failed to create order. Please try again.'); setLoading(false); updateSteps(2); }
-		} catch (err) { console.error(err); showError('Something went wrong. Please try again.'); setLoading(false); updateSteps(2); }
+				new Razorpay(rzpOpts).open();
+
+			} else {
+				// ── Single donation (one-time or new club) ─────────────────
+				const isClub = donationType === 'club';
+				const response = await fetch('/api/method/techniti.api.create_website_donation_order', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
+					body: JSON.stringify({
+						full_name: fullName, id_type: idType, id_number: idNumber,
+						amount: selectedAmount, email, mobile,
+						cause: selectedCause, message, is_anonymous: isAnonymous,
+						is_club_donation: isClub ? 1 : 0,
+						months: isClub ? (selectedMonths || 1) : 1
+					})
+				});
+				const data = await response.json();
+				if (!data.message || !data.message.order_id) {
+					showError(data.exception || 'Failed to create order. Please try again.');
+					setLoading(false); setStep(2); return;
+				}
+				const od = data.message;
+				const rzpOpts = {
+					key: od.razorpay_key_id,
+					amount: Math.round(od.amount * 100),
+					currency: 'INR',
+					name: 'WCWW',
+					description: isClub ? 'Club Donation' : 'Donation',
+					order_id: od.order_id,
+					prefill: { name: fullName, email, contact: mobile },
+					theme: { color: '#3cc88f' },
+					handler: async function(pr) {
+						try {
+							const vRes = await fetch('/api/method/techniti.api.handle_website_donation_callback', {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
+								body: JSON.stringify({
+									donation_id: od.donation_id,
+									razorpay_payment_id: pr.razorpay_payment_id,
+									razorpay_order_id: pr.razorpay_order_id,
+									razorpay_signature: pr.razorpay_signature
+								})
+							});
+							const vData = await vRes.json();
+							if (vData.message && vData.message.success) {
+								window.location.href = '/donation-success?id=' + od.donation_id;
+							} else {
+								showError('Payment verification failed. Please contact support.');
+								setLoading(false); setStep(2);
+							}
+						} catch (err) {
+							showError('Payment verification failed. Please contact support.');
+							setLoading(false); setStep(2);
+						}
+					},
+					modal: { ondismiss: function() { setLoading(false); setStep(2); } }
+				};
+				new Razorpay(rzpOpts).open();
+			}
+		} catch (err) {
+			showError('Something went wrong. Please try again.');
+			setLoading(false); setStep(2);
+		}
 	});
 });
 </script>

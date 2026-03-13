@@ -12,7 +12,16 @@
   "razorpay_webhook_secret",
   "notification_section",
   "send_donation_receipt",
-  "receipt_email_template"
+  "receipt_email_template",
+  "thank_you_email_subject",
+  "thank_you_email_body",
+  "cc_emails",
+  "section_break_defaults",
+  "default_cause",
+  "donation_company",
+  "section_break_club",
+  "allow_donor_amount_change",
+  "club_section_note"
  ],
  "fields": [
   {
@@ -47,7 +56,7 @@
   {
    "fieldname": "notification_section",
    "fieldtype": "Section Break",
-   "label": "Notifications"
+   "label": "Notifications & Emails"
   },
   {
    "fieldname": "send_donation_receipt",
@@ -61,6 +70,59 @@
    "label": "Receipt Email Template",
    "options": "Email Template",
    "depends_on": "send_donation_receipt"
+  },
+  {
+   "fieldname": "thank_you_email_subject",
+   "fieldtype": "Data",
+   "label": "Thank You Email Subject",
+   "default": "Thank you for your generous donation!"
+  },
+  {
+   "fieldname": "thank_you_email_body",
+   "fieldtype": "Text Editor",
+   "label": "Thank You Email Body"
+  },
+  {
+   "fieldname": "cc_emails",
+   "fieldtype": "Data",
+   "label": "CC Emails (comma separated)",
+   "description": "These emails will receive a copy of every donation receipt"
+  },
+  {
+   "fieldname": "section_break_defaults",
+   "fieldtype": "Section Break",
+   "label": "Defaults"
+  },
+  {
+   "fieldname": "default_cause",
+   "fieldtype": "Link",
+   "label": "Default Cause",
+   "options": "Cause",
+   "description": "Default cause used when no cause is specified"
+  },
+  {
+   "fieldname": "donation_company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "section_break_club",
+   "fieldtype": "Section Break",
+   "label": "Club / Subscription Settings"
+  },
+  {
+   "fieldname": "allow_donor_amount_change",
+   "fieldtype": "Check",
+   "label": "Allow Donors to Change Club Amount",
+   "default": "0",
+   "description": "If enabled, existing club donors can enter a custom amount instead of their fixed monthly amount on the donation page"
+  },
+  {
+   "fieldname": "club_section_note",
+   "fieldtype": "HTML",
+   "label": "Club Note",
+   "options": "<div class='alert alert-info' style='font-size:13px;'><strong>To change a donor's club cause or amount</strong>, open the Website Donor record and modify the Club Details table, then save. The change takes effect on the donor's next donation.</div>"
   }
  ],
  "index_web_pages_for_search": 1,

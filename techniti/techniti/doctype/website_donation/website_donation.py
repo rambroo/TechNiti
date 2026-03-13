@@ -53,11 +53,12 @@ class WebsiteDonation(Document):
 		self.razorpay_payment_id = payment_id
 		self.razorpay_order_id = order_id
 		self.razorpay_signature = signature
-		self.payment_status = "Paid"
+		self.payment_status = "Captured"
 		if payment_method:
-			self.payment_method = payment_method
+			self.mode_of_payment = payment_method
 		self.save(ignore_permissions=True)
-		self.submit()
+		if self.docstatus == 0:
+			self.submit()
 
 	def on_payment_failure(self):
 		"""Called when payment fails"""

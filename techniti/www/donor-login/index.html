@@ -1,0 +1,610 @@
+{% extends "templates/web.html" %}
+
+{% block head_include %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+	/* Remove Frappe default white padding */
+	body { background: linear-gradient(135deg, #1a3a2a 0%, #1e4d3a 50%, #25283a 100%) !important; min-height: 100vh; }
+	.page-content, .main-section { background: transparent !important; padding: 0 !important; }
+	.container { max-width: 100% !important; padding: 0 !important; background: transparent !important; }
+	nav.navbar, .web-footer, footer { background: transparent !important; }
+
+	:root {
+		--primary: #3cc88f;
+		--primary-dark: #2ba872;
+		--secondary: #ff6b70;
+		--dark: #25283a;
+		--light: #f7f7f7;
+	}
+
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+
+	.login-wrapper {
+		min-height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 40px 16px;
+		font-family: 'Open Sans', sans-serif;
+	}
+
+	.login-card {
+		background: #fff;
+		border-radius: 20px;
+		box-shadow: 0 10px 30px 3px rgba(0,0,0,0.15);
+		padding: 48px 40px;
+		width: 100%;
+		max-width: 440px;
+	}
+
+	.login-logo {
+		text-align: center;
+		margin-bottom: 8px;
+	}
+
+	.login-logo span {
+		display: inline-block;
+		background: var(--primary);
+		color: #fff;
+		font-family: 'Yeseva One', cursive;
+		font-size: 28px;
+		padding: 8px 20px;
+		border-radius: 12px;
+	}
+
+	.login-title {
+		font-family: 'Yeseva One', cursive;
+		color: var(--dark);
+		font-size: 24px;
+		text-align: center;
+		margin-bottom: 6px;
+		margin-top: 16px;
+	}
+
+	.login-subtitle {
+		color: #666;
+		font-size: 14px;
+		text-align: center;
+		margin-bottom: 24px;
+	}
+
+	.tab-group {
+		display: flex;
+		margin-bottom: 28px;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 2px solid var(--primary);
+	}
+
+	.tab-btn {
+		flex: 1;
+		padding: 12px;
+		background: transparent;
+		border: none;
+		font-family: 'Open Sans', sans-serif;
+		font-size: 15px;
+		font-weight: 600;
+		color: var(--primary);
+		cursor: pointer;
+		transition: background 0.2s, color 0.2s;
+	}
+
+	.tab-btn.active {
+		background: var(--primary);
+		color: #fff;
+	}
+
+	.form-group {
+		margin-bottom: 16px;
+	}
+
+	.form-group label {
+		display: block;
+		font-weight: 600;
+		color: var(--dark);
+		margin-bottom: 8px;
+		font-size: 14px;
+	}
+
+	.form-group input, .form-group select {
+		width: 100%;
+		padding: 14px 16px;
+		border: 1px solid #e0e0e0;
+		border-radius: 10px;
+		font-family: 'Open Sans', sans-serif;
+		font-size: 15px;
+		color: var(--dark);
+		transition: border-color 0.2s;
+		outline: none;
+		background: #fff;
+	}
+
+	.form-group input:focus, .form-group select:focus {
+		border-color: var(--primary);
+		box-shadow: 0 0 0 3px rgba(60,200,143,0.12);
+	}
+
+	.form-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 12px;
+	}
+
+	.optional-label {
+		font-weight: 400;
+		color: #999;
+		font-size: 12px;
+	}
+
+	.btn-primary {
+		width: 100%;
+		padding: 15px;
+		background: var(--primary);
+		color: #fff;
+		border: none;
+		border-radius: 30px;
+		font-family: 'Open Sans', sans-serif;
+		font-size: 16px;
+		font-weight: 700;
+		cursor: pointer;
+		box-shadow: 2px 2px 0px var(--dark);
+		transition: background 0.2s, transform 0.1s;
+		margin-top: 8px;
+	}
+
+	.btn-primary:hover { background: var(--primary-dark); }
+	.btn-primary:active { transform: translateY(1px); }
+	.btn-primary:disabled { background: #b2e8d4; cursor: not-allowed; box-shadow: none; }
+
+	.btn-link {
+		background: none;
+		border: none;
+		color: var(--primary);
+		cursor: pointer;
+		font-family: 'Open Sans', sans-serif;
+		font-size: 14px;
+		font-weight: 600;
+		padding: 0;
+		text-decoration: underline;
+	}
+
+	.alert {
+		padding: 12px 16px;
+		border-radius: 10px;
+		font-size: 14px;
+		margin-bottom: 16px;
+		display: none;
+	}
+	.alert.show { display: block; }
+	.alert-error { background: #fff0f0; color: #c0392b; border: 1px solid #f5c6cb; }
+	.alert-success { background: #f0fff8; color: #1a6b47; border: 1px solid #b2e8d4; }
+
+	/* OTP input */
+	.otp-group {
+		display: flex;
+		gap: 10px;
+		justify-content: center;
+		margin-bottom: 24px;
+	}
+
+	.otp-input {
+		width: 52px !important;
+		height: 60px;
+		text-align: center;
+		font-size: 24px;
+		font-weight: 700;
+		border: 2px solid #e0e0e0 !important;
+		border-radius: 12px !important;
+		color: var(--dark);
+		transition: border-color 0.2s;
+		outline: none;
+	}
+
+	.otp-input:focus {
+		border-color: var(--primary) !important;
+		box-shadow: 0 0 0 3px rgba(60,200,143,0.12) !important;
+	}
+
+	.identifier-display {
+		background: #f7fffe;
+		border: 1px solid #b2e8d4;
+		border-radius: 10px;
+		padding: 10px 16px;
+		font-size: 14px;
+		color: var(--dark);
+		margin-bottom: 20px;
+		text-align: center;
+	}
+
+	.identifier-display strong { color: var(--primary); }
+
+	.resend-row {
+		text-align: center;
+		margin-top: 16px;
+		font-size: 13px;
+		color: #666;
+	}
+
+	.timer {
+		color: var(--secondary);
+		font-weight: 600;
+	}
+
+	.back-link {
+		text-align: center;
+		margin-top: 20px;
+		font-size: 13px;
+		color: #999;
+	}
+
+	.back-link a {
+		color: var(--primary);
+		text-decoration: none;
+		font-weight: 600;
+	}
+
+	.loading-spinner {
+		display: inline-block;
+		width: 18px;
+		height: 18px;
+		border: 3px solid rgba(255,255,255,0.4);
+		border-top-color: #fff;
+		border-radius: 50%;
+		animation: spin 0.7s linear infinite;
+		vertical-align: middle;
+		margin-right: 8px;
+	}
+
+	@keyframes spin { to { transform: rotate(360deg); } }
+
+	#otp-section { display: none; }
+
+	.section-hidden { display: none !important; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="login-wrapper">
+	<div class="login-card">
+		<div class="login-logo">
+			<span>WCWW</span>
+		</div>
+		<h1 class="login-title">Donor Portal</h1>
+		<p class="login-subtitle">Login or create your donor account</p>
+
+		<!-- Tab switcher -->
+		<div class="tab-group" id="tab-group">
+			<button id="tab-login" class="tab-btn active" onclick="showTab('login')">Login</button>
+			<button id="tab-register" class="tab-btn" onclick="showTab('register')">Register</button>
+		</div>
+
+		<!-- ── LOGIN SECTION ── -->
+		<div id="login-section">
+			<div id="step1-alert" class="alert"></div>
+			<div class="form-group">
+				<label for="identifier">Email Address</label>
+				<input type="email" id="identifier" placeholder="your@email.com" autocomplete="email">
+			</div>
+			<button class="btn-primary" id="send-otp-btn" onclick="sendOtp()">
+				Send OTP
+			</button>
+		</div>
+
+		<!-- ── REGISTER SECTION ── -->
+		<div id="reg-section" style="display:none">
+			<div id="reg-alert" class="alert"></div>
+			<div class="form-group">
+				<label for="reg-name">Full Name</label>
+				<input type="text" id="reg-name" placeholder="Your full name" autocomplete="name">
+			</div>
+			<div class="form-group">
+				<label for="reg-email">Email Address</label>
+				<input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email">
+			</div>
+			<div class="form-group">
+				<label for="reg-mobile">Mobile Number <span class="optional-label">(optional)</span></label>
+				<input type="tel" id="reg-mobile" placeholder="10-digit mobile number" autocomplete="tel">
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label for="reg-id-type">ID Type <span class="optional-label">(optional)</span></label>
+					<select id="reg-id-type">
+						<option value="">No ID (TDS will apply)</option>
+						<option value="PAN Card">PAN Card</option>
+						<option value="Aadhar Card">Aadhar Card</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="reg-id-number">ID Number <span class="optional-label">(optional)</span></label>
+					<input type="text" id="reg-id-number" placeholder="ID number">
+				</div>
+			</div>
+			<button class="btn-primary" id="reg-submit-btn" onclick="registerDonor()">
+				Create Account
+			</button>
+		</div>
+
+		<!-- ── OTP STEP (shared for login & register) ── -->
+		<div id="otp-section">
+			<div id="step2-alert" class="alert"></div>
+			<div class="identifier-display">
+				OTP sent to <strong id="identifier-display-text"></strong>
+			</div>
+			<div class="otp-group" id="otp-group">
+				<input type="tel" class="otp-input" maxlength="1" data-index="0" onkeydown="handleOtpKey(event, 0)" oninput="handleOtpInput(event, 0)">
+				<input type="tel" class="otp-input" maxlength="1" data-index="1" onkeydown="handleOtpKey(event, 1)" oninput="handleOtpInput(event, 1)">
+				<input type="tel" class="otp-input" maxlength="1" data-index="2" onkeydown="handleOtpKey(event, 2)" oninput="handleOtpInput(event, 2)">
+				<input type="tel" class="otp-input" maxlength="1" data-index="3" onkeydown="handleOtpKey(event, 3)" oninput="handleOtpInput(event, 3)">
+				<input type="tel" class="otp-input" maxlength="1" data-index="4" onkeydown="handleOtpKey(event, 4)" oninput="handleOtpInput(event, 4)">
+				<input type="tel" class="otp-input" maxlength="1" data-index="5" onkeydown="handleOtpKey(event, 5)" oninput="handleOtpInput(event, 5)">
+			</div>
+			<button class="btn-primary" id="verify-otp-btn" onclick="verifyOtp()">
+				Verify & Login
+			</button>
+			<div class="resend-row">
+				<span id="resend-timer">Resend OTP in <span class="timer" id="timer-count">60</span>s</span>
+				<span id="resend-action" style="display:none;">
+					Didn't receive the OTP? <button class="btn-link" onclick="resendOtp()">Resend</button>
+				</span>
+			</div>
+			<div class="back-link">
+				<a href="#" onclick="goBack(); return false;">← Go back</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	let currentIdentifier = '';
+	let timerInterval = null;
+	let afterLoginRedirect = '/donor-portal';
+	let currentMode = 'login'; // 'login' or 'register'
+
+	function showAlert(alertId, message, type) {
+		const el = document.getElementById(alertId);
+		el.className = `alert ${type} show`;
+		el.textContent = message;
+	}
+
+	function hideAlert(alertId) {
+		const el = document.getElementById(alertId);
+		el.className = 'alert';
+		el.textContent = '';
+	}
+
+	function setLoading(btnId, loading, text) {
+		const btn = document.getElementById(btnId);
+		if (loading) {
+			btn.disabled = true;
+			btn.innerHTML = `<span class="loading-spinner"></span>${text}`;
+		} else {
+			btn.disabled = false;
+			btn.innerHTML = text;
+		}
+	}
+
+	function showTab(tab) {
+		currentMode = tab;
+		document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+		document.getElementById('tab-' + tab).classList.add('active');
+		if (tab === 'login') {
+			document.getElementById('login-section').style.display = 'block';
+			document.getElementById('reg-section').style.display = 'none';
+			hideAlert('step1-alert');
+		} else {
+			document.getElementById('login-section').style.display = 'none';
+			document.getElementById('reg-section').style.display = 'block';
+			hideAlert('reg-alert');
+		}
+	}
+
+	function showOtpStep(email) {
+		document.getElementById('tab-group').style.display = 'none';
+		document.getElementById('login-section').style.display = 'none';
+		document.getElementById('reg-section').style.display = 'none';
+		document.getElementById('otp-section').style.display = 'block';
+		document.getElementById('identifier-display-text').textContent = email;
+		hideAlert('step2-alert');
+		clearOtpInputs();
+		document.querySelector('.otp-input').focus();
+		startResendTimer();
+	}
+
+	async function sendOtp() {
+		const identifier = document.getElementById('identifier').value.trim();
+		if (!identifier) {
+			showAlert('step1-alert', 'Please enter your email address.', 'alert-error');
+			return;
+		}
+		hideAlert('step1-alert');
+		setLoading('send-otp-btn', true, 'Sending OTP...');
+
+		try {
+			const res = await frappe.call({
+				method: 'techniti.api.request_donor_otp',
+				args: { identifier }
+			});
+			const data = res.message;
+			if (data && data.success) {
+				currentIdentifier = identifier;
+				afterLoginRedirect = '/donor-portal';
+				showOtpStep(identifier);
+			} else {
+				showAlert('step1-alert', (data && data.message) || 'Failed to send OTP. Please try again.', 'alert-error');
+			}
+		} catch (err) {
+			showAlert('step1-alert', 'An error occurred. Please try again.', 'alert-error');
+		} finally {
+			setLoading('send-otp-btn', false, 'Send OTP');
+		}
+	}
+
+	async function registerDonor() {
+		const fullName = document.getElementById('reg-name').value.trim();
+		const email = document.getElementById('reg-email').value.trim();
+		const mobile = document.getElementById('reg-mobile').value.trim();
+		const idType = document.getElementById('reg-id-type').value;
+		const idNumber = document.getElementById('reg-id-number').value.trim();
+
+		if (!fullName) { showAlert('reg-alert', 'Please enter your full name.', 'alert-error'); return; }
+		if (!email) { showAlert('reg-alert', 'Please enter your email address.', 'alert-error'); return; }
+		hideAlert('reg-alert');
+		setLoading('reg-submit-btn', true, 'Creating Account...');
+
+		try {
+			const res = await frappe.call({
+				method: 'techniti.api.register_donor',
+				args: { full_name: fullName, email, mobile, id_type: idType, id_number: idNumber }
+			});
+			const data = res.message;
+			if (data && data.success) {
+				currentIdentifier = email;
+				afterLoginRedirect = '/donate';
+				showOtpStep(email);
+			} else if (data && data.exists) {
+				showAlert('reg-alert', data.message + ' <a href="#" onclick="showTab(\'login\'); return false;">Login here</a>', 'alert-error');
+				document.getElementById('reg-alert').innerHTML = data.message + ' <a href="#" onclick="showTab(\'login\'); return false;">Login here</a>';
+				document.getElementById('reg-alert').className = 'alert alert-error show';
+			} else {
+				showAlert('reg-alert', (data && data.message) || 'Registration failed. Please try again.', 'alert-error');
+			}
+		} catch (err) {
+			showAlert('reg-alert', 'An error occurred. Please try again.', 'alert-error');
+		} finally {
+			setLoading('reg-submit-btn', false, 'Create Account');
+		}
+	}
+
+	function handleOtpInput(event, index) {
+		const inputs = document.querySelectorAll('.otp-input');
+		const val = event.target.value;
+		if (!/^\d$/.test(val)) {
+			event.target.value = '';
+			return;
+		}
+		if (index < 5) {
+			inputs[index + 1].focus();
+		} else {
+			verifyOtp();
+		}
+	}
+
+	function handleOtpKey(event, index) {
+		const inputs = document.querySelectorAll('.otp-input');
+		if (event.key === 'Backspace') {
+			if (!inputs[index].value && index > 0) {
+				inputs[index - 1].focus();
+				inputs[index - 1].value = '';
+			}
+		} else if (event.key === 'ArrowLeft' && index > 0) {
+			inputs[index - 1].focus();
+		} else if (event.key === 'ArrowRight' && index < 5) {
+			inputs[index + 1].focus();
+		}
+	}
+
+	function getOtpValue() {
+		return Array.from(document.querySelectorAll('.otp-input')).map(i => i.value).join('');
+	}
+
+	function clearOtpInputs() {
+		document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+	}
+
+	async function verifyOtp() {
+		const otp = getOtpValue();
+		if (otp.length !== 6) {
+			showAlert('step2-alert', 'Please enter the complete 6-digit OTP.', 'alert-error');
+			return;
+		}
+		hideAlert('step2-alert');
+		setLoading('verify-otp-btn', true, 'Verifying...');
+
+		try {
+			const res = await frappe.call({
+				method: 'techniti.api.verify_donor_otp',
+				args: { identifier: currentIdentifier, otp }
+			});
+			const data = res.message;
+			if (data && data.success) {
+				showAlert('step2-alert', 'Success! Redirecting...', 'alert-success');
+				setTimeout(() => { window.location.href = afterLoginRedirect; }, 800);
+			} else {
+				showAlert('step2-alert', (data && data.message) || 'Invalid OTP. Please try again.', 'alert-error');
+				clearOtpInputs();
+				document.querySelector('.otp-input').focus();
+			}
+		} catch (err) {
+			showAlert('step2-alert', 'Verification failed. Please try again.', 'alert-error');
+			clearOtpInputs();
+		} finally {
+			setLoading('verify-otp-btn', false, 'Verify & Login');
+		}
+	}
+
+	function startResendTimer() {
+		clearInterval(timerInterval);
+		let seconds = 60;
+		document.getElementById('timer-count').textContent = seconds;
+		document.getElementById('resend-timer').style.display = 'inline';
+		document.getElementById('resend-action').style.display = 'none';
+
+		timerInterval = setInterval(() => {
+			seconds--;
+			document.getElementById('timer-count').textContent = seconds;
+			if (seconds <= 0) {
+				clearInterval(timerInterval);
+				document.getElementById('resend-timer').style.display = 'none';
+				document.getElementById('resend-action').style.display = 'inline';
+			}
+		}, 1000);
+	}
+
+	async function resendOtp() {
+		hideAlert('step2-alert');
+		try {
+			const res = await frappe.call({
+				method: 'techniti.api.request_donor_otp',
+				args: { identifier: currentIdentifier }
+			});
+			const data = res.message;
+			if (data && data.success) {
+				showAlert('step2-alert', 'A new OTP has been sent.', 'alert-success');
+				clearOtpInputs();
+				startResendTimer();
+			} else {
+				showAlert('step2-alert', (data && data.message) || 'Failed to resend OTP.', 'alert-error');
+			}
+		} catch (err) {
+			showAlert('step2-alert', 'Failed to resend OTP. Please try again.', 'alert-error');
+		}
+	}
+
+	function goBack() {
+		clearInterval(timerInterval);
+		document.getElementById('otp-section').style.display = 'none';
+		document.getElementById('tab-group').style.display = 'flex';
+		if (currentMode === 'register') {
+			document.getElementById('reg-section').style.display = 'block';
+			document.getElementById('login-section').style.display = 'none';
+		} else {
+			document.getElementById('login-section').style.display = 'block';
+			document.getElementById('reg-section').style.display = 'none';
+		}
+		hideAlert('step1-alert');
+		hideAlert('reg-alert');
+		hideAlert('step2-alert');
+		clearOtpInputs();
+	}
+
+	// Allow Enter key on email fields
+	document.getElementById('identifier').addEventListener('keypress', function(e) {
+		if (e.key === 'Enter') sendOtp();
+	});
+	document.getElementById('reg-id-number').addEventListener('keypress', function(e) {
+		if (e.key === 'Enter') registerDonor();
+	});
+</script>
+{% endblock %}

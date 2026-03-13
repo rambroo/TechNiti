@@ -1,0 +1,136 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2024-01-17 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "donor",
+  "donor_name",
+  "cause",
+  "last_subscription",
+  "column_break_1",
+  "expired_date",
+  "total_amount",
+  "donation_left_month",
+  "months_left",
+  "donor_subscription_type",
+  "section_break_followup",
+  "connected_date",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "WEXP-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "donor",
+   "fieldtype": "Link",
+   "label": "Donor",
+   "options": "Website Donor",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fetch_from": "donor.full_name",
+   "fieldname": "donor_name",
+   "fieldtype": "Data",
+   "label": "Donor Name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cause",
+   "fieldtype": "Link",
+   "label": "Cause",
+   "options": "Cause",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "last_subscription",
+   "fieldtype": "Link",
+   "label": "Last Subscription",
+   "options": "Website Donation Subscription"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expired_date",
+   "fieldtype": "Date",
+   "label": "Expired Date"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Pending Amount",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "donation_left_month",
+   "fieldtype": "Data",
+   "label": "Pending From Month"
+  },
+  {
+   "fieldname": "months_left",
+   "fieldtype": "Int",
+   "label": "Months Pending",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "donor_subscription_type",
+   "fieldtype": "Data",
+   "label": "Type"
+  },
+  {
+   "fieldname": "section_break_followup",
+   "fieldtype": "Section Break",
+   "label": "Follow Up"
+  },
+  {
+   "fieldname": "connected_date",
+   "fieldtype": "Date",
+   "label": "Follow Up Date"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-17 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Techniti",
+ "name": "Website Expired Subscription",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "donor",
+ "track_changes": 1
+}
