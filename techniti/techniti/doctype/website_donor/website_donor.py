@@ -50,11 +50,12 @@ class WebsiteDonor(Document):
 		"""Create a Frappe User for portal login"""
 		if not self.email:
 			return
-		if frappe.db.exists("User", self.email):
-			# Link existing user
-			frappe.db.set_value("Website Donor", self.name, "linked_user", self.email, update_modified=False)
-			return
 		try:
+			if frappe.db.exists("User", self.email):
+				# Link existing user
+				frappe.db.set_value("Website Donor", self.name, "linked_user", self.email, update_modified=False)
+				return
+
 			# Ensure the Website Donor role exists
 			if not frappe.db.exists("Role", "Website Donor"):
 				role_doc = frappe.get_doc({"doctype": "Role", "role_name": "Website Donor", "desk_access": 0})

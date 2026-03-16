@@ -1236,14 +1236,19 @@ def register_donor(full_name, email, mobile=None, id_type=None, id_number=None):
 		return {"success": False, "exists": True, "message": "An account with this email already exists. Please login instead."}
 
 	# Create Website Donor — after_insert on the doctype automatically creates the linked User
-	donor = frappe.get_doc({
+	# Only include id fields when non-empty to avoid triggering mandatory validation
+	doc_data = {
 		"doctype": "Website Donor",
+		"naming_series": "WDONOR-.#####",
 		"full_name": full_name,
 		"email": email,
 		"mobile": mobile or "",
-		"id_type": id_type or "",
-		"id_number": id_number or "",
-	})
+	}
+	if id_type:
+		doc_data["id_type"] = id_type
+	if id_number:
+		doc_data["id_number"] = id_number
+	donor = frappe.get_doc(doc_data)
 	donor.insert(ignore_permissions=True)
 	frappe.db.commit()
 
