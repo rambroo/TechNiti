@@ -1,0 +1,62 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-03-21 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "field_number",
+  "value_type",
+  "document_field",
+  "static_value"
+ ],
+ "fields": [
+  {
+   "fieldname": "field_number",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Field Number",
+   "reqd": 1,
+   "description": "Corresponds to field_1, field_2, … in the Sparklebot template"
+  },
+  {
+   "default": "Document Field",
+   "fieldname": "value_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Value Type",
+   "options": "Document Field\nStatic Text",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.value_type==\"Document Field\"",
+   "fieldname": "document_field",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Document Field",
+   "description": "Field name on the triggering document (e.g. customer_name, grand_total, due_date)"
+  },
+  {
+   "depends_on": "eval:doc.value_type==\"Static Text\"",
+   "fieldname": "static_value",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Static Value"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-03-21 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "techniti",
+ "name": "WhatsApp Template Parameter",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "ASC",
+ "states": []
+}

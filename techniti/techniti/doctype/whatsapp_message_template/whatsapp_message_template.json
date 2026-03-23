@@ -1,0 +1,126 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{title}",
+ "creation": "2026-03-21 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "is_active",
+  "column_break_top",
+  "message_type",
+  "section_break_text",
+  "template_text",
+  "section_break_template",
+  "wa_template_name",
+  "template_language",
+  "section_break_params",
+  "parameters"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "column_break_top",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "text",
+   "fieldname": "message_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Message Type",
+   "options": "text\ntemplate",
+   "reqd": 1,
+   "description": "text = plain message; template = pre-approved Sparklebot template"
+  },
+  {
+   "depends_on": "eval:doc.message_type==\"text\"",
+   "fieldname": "section_break_text",
+   "fieldtype": "Section Break",
+   "label": "Message Text"
+  },
+  {
+   "depends_on": "eval:doc.message_type==\"text\"",
+   "fieldname": "template_text",
+   "fieldtype": "Text Editor",
+   "label": "Template Text",
+   "description": "Use {field_name} placeholders, e.g. {customer}, {name}, {grand_total}"
+  },
+  {
+   "depends_on": "eval:doc.message_type==\"template\"",
+   "fieldname": "section_break_template",
+   "fieldtype": "Section Break",
+   "label": "Sparklebot Template"
+  },
+  {
+   "depends_on": "eval:doc.message_type==\"template\"",
+   "fieldname": "wa_template_name",
+   "fieldtype": "Data",
+   "label": "Template Name",
+   "description": "Exact template name registered in Sparklebot (e.g. pending_payment)"
+  },
+  {
+   "default": "en",
+   "depends_on": "eval:doc.message_type==\"template\"",
+   "fieldname": "template_language",
+   "fieldtype": "Data",
+   "label": "Language Code",
+   "description": "e.g. en, en_GB, hi"
+  },
+  {
+   "depends_on": "eval:doc.message_type==\"template\"",
+   "fieldname": "section_break_params",
+   "fieldtype": "Section Break",
+   "label": "Template Parameters"
+  },
+  {
+   "depends_on": "eval:doc.message_type==\"template\"",
+   "fieldname": "parameters",
+   "fieldtype": "Table",
+   "label": "Parameters",
+   "options": "WhatsApp Template Parameter",
+   "description": "Map field_1 … field_10 to document fields or static text"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-03-21 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "techniti",
+ "name": "WhatsApp Message Template",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

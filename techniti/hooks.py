@@ -144,6 +144,14 @@ doc_events = {
 	},
 	"Website Donation Subscription": {
 		"after_save": "techniti.api.update_website_expired_subscriptions"
+	},
+	# WhatsApp notification handlers — fires for every doctype
+	"*": {
+		"on_submit":    "techniti.whatsapp.whatsapp.handle_whatsapp_notification_submit",
+		"before_save":  "techniti.whatsapp.whatsapp.handle_whatsapp_notification_save",
+		"on_cancel":    "techniti.whatsapp.whatsapp.handle_whatsapp_notification_cancel",
+		"after_insert": "techniti.whatsapp.whatsapp.handle_whatsapp_notification_creation",
+		"on_update":    "techniti.whatsapp.whatsapp.handle_whatsapp_notification_update"
 	}
 }
 
@@ -156,6 +164,15 @@ scheduler_events = {
 		"techniti.api.update_website_expired_subscriptions",
 		"techniti.api.update_website_donor_categories",
 		"techniti.api.update_website_donor_status",
+	],
+	# WhatsApp scheduled reminders
+	"cron": {
+		"00 11 * * *": [
+			"techniti.whatsapp.whatsapp.send_scheduled_whatsapp_reminders_enhanced"
+		]
+	},
+	"hourly": [
+		"techniti.whatsapp.whatsapp.process_scheduled_whatsapp_time_reminders"
 	]
 }
 

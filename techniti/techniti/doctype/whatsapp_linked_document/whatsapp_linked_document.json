@@ -1,0 +1,70 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-03-21 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "linked_doctype",
+  "phone_field",
+  "column_break_abc",
+  "send_to_all_assignees",
+  "receiver_by_role",
+  "condition"
+ ],
+ "fields": [
+  {
+   "fieldname": "linked_doctype",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Linked Doctype",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "phone_field",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Phone Field",
+   "description": "Field on the linked document that holds the phone number"
+  },
+  {
+   "fieldname": "column_break_abc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "send_to_all_assignees",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Send to All Assignees"
+  },
+  {
+   "fieldname": "receiver_by_role",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Receiver By Role",
+   "options": "Role"
+  },
+  {
+   "fieldname": "condition",
+   "fieldtype": "Data",
+   "label": "Condition"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-03-21 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "techniti",
+ "name": "WhatsApp Linked Document",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
