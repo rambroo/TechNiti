@@ -1219,24 +1219,128 @@ def verify_donor_otp(identifier, otp):
 
 
 @frappe.whitelist(allow_guest=True)
-def register_donor(full_name, email, mobile=None, id_type=None, id_number=None):
-	"""Register a new donor account and send OTP for email verification"""
+def request_donor_whatsapp_otp(mobile):
+	"""Send a 6-digit OTP via WhatsApp using the 'login' template (expires in 10 minutes)."""
+	import random
+	from techniti.whatsapp.whatsapp import SparklebotHandler
+
+	digits = "".join(filter(str.isdigit, mobile or ""))
+	if len(digits) < 7:
+		return {"success": False, "message": "Please enter a valid mobile number"}
+
+	# Match last 10 digits to handle numbers stored with or without country code
+	local = digits[-10:] if len(digits) > 10 else digits
+	donors = frappe.get_all(
+		"Website Donor",
+		filters=[["mobile", "like", f"%{local}"]],
+		fields=["name", "full_name", "mobile", "email"],
+		limit=1,
+	)
+	if not donors:
+		return {"success": False, "message": "No donor account found with this mobile number"}
+
+	handler = SparklebotHandler()
+	if not handler.is_enabled():
+		return {"success": False, "message": "WhatsApp service is not enabled"}
+
+	otp = str(random.randint(100000, 999999))
+	cache_key = f"donor_otp_wa_{digits}"
+	frappe.cache().set_value(cache_key, {"otp": otp, "donor": donors[0].name}, expires_in_sec=600)
+
+	handler.send_template(
+		phone=digits,
+		template_name="login",
+		language="en",
+		field_params={"field_1": otp},
+		doctype="Website Donor",
+		docname=donors[0].name,
+	)
+
+	masked = digits[:2] + "X" * (len(digits) - 4) + digits[-2:]
+	return {"success": True, "message": f"OTP sent to WhatsApp number ending {digits[-4:]}", "masked": masked}
+
+
+@frappe.whitelist(allow_guest=True)
+def verify_donor_whatsapp_otp(mobile, otp):
+	"""Verify WhatsApp OTP and log the donor in."""
+	digits = "".join(filter(str.isdigit, mobile or ""))
+	cache_key = f"donor_otp_wa_{digits}"
+	cached = frappe.cache().get_value(cache_key)
+
+	if not cached:
+		return {"success": False, "message": "OTP expired or not found. Please request a new one."}
+	if str(cached.get("otp")).strip() != str(otp).strip():
+		return {"success": False, "message": "Invalid OTP. Please try again."}
+
+	frappe.cache().delete_value(cache_key)
+
+	donor_name = cached.get("donor")
+	donor = frappe.get_doc("Website Donor", donor_name)
+
+	if not donor.linked_user:
+		if not donor.email:
+			return {"success": False, "message": "No email on donor account. Please contact support."}
+
+		if not frappe.db.exists("Role", "Website Donor"):
+			frappe.get_doc({"doctype": "Role", "role_name": "Website Donor", "desk_access": 0}).insert(ignore_permissions=True)
+
+		if frappe.db.exists("User", donor.email):
+			linked = donor.email
+		else:
+			new_user = frappe.get_doc({
+				"doctype": "User",
+				"email": donor.email,
+				"first_name": donor.full_name.title() if donor.full_name else "",
+				"user_type": "Website User",
+				"send_welcome_email": 0,
+				"roles": [{"role": "Website Donor"}]
+			})
+			new_user.insert(ignore_permissions=True)
+			linked = new_user.name
+
+		frappe.db.set_value("Website Donor", donor.name, "linked_user", linked, update_modified=False)
+		frappe.db.commit()
+		donor.linked_user = linked
+
+	try:
+		frappe.local.login_manager.login_as(donor.linked_user)
+		return {"success": True, "redirect": "/donor-portal"}
+	except Exception as e:
+		frappe.log_error(title="WhatsApp OTP Login Error", message=str(e))
+		return {"success": False, "message": "Login failed. Please contact support."}
+
+
+@frappe.whitelist(allow_guest=True)
+def register_donor(full_name, email=None, mobile=None, reg_channel="email", id_type=None, id_number=None):
+	"""Register a new donor account. reg_channel = 'email' or 'whatsapp'."""
 	import random
 	full_name = (full_name or "").strip()
 	email = (email or "").strip().lower()
+	mobile = (mobile or "").strip()
 
 	if not full_name:
 		return {"success": False, "message": "Please enter your full name."}
-	if not email:
-		return {"success": False, "message": "Please enter your email address."}
 
-	# Check if donor already exists
-	existing = frappe.db.get_value("Website Donor", {"email": email}, "name")
-	if existing:
-		return {"success": False, "exists": True, "message": "An account with this email already exists. Please login instead."}
+	if reg_channel == "whatsapp":
+		if not mobile:
+			return {"success": False, "message": "Please enter your mobile number."}
+		digits = "".join(filter(str.isdigit, mobile))
+		if len(digits) < 7:
+			return {"success": False, "message": "Please enter a valid mobile number."}
+		local = digits[-10:] if len(digits) > 10 else digits
+		existing = frappe.get_all("Website Donor", filters=[["mobile", "like", f"%{local}"]], fields=["name"], limit=1)
+		if existing:
+			return {"success": False, "exists": True, "message": "An account with this mobile number already exists. Please login instead."}
+		# Frappe User requires an email — generate a non-public placeholder
+		if not email:
+			email = f"donor_{digits}@noreply.wcww.in"
+	else:
+		if not email:
+			return {"success": False, "message": "Please enter your email address."}
+		existing = frappe.db.get_value("Website Donor", {"email": email}, "name")
+		if existing:
+			return {"success": False, "exists": True, "message": "An account with this email already exists. Please login instead."}
 
-	# Create Website Donor — after_insert on the doctype automatically creates the linked User
-	# Only include id fields when non-empty to avoid triggering mandatory validation
 	doc_data = {
 		"doctype": "Website Donor",
 		"naming_series": "WDONOR-.#####",
@@ -1252,21 +1356,38 @@ def register_donor(full_name, email, mobile=None, id_type=None, id_number=None):
 	donor.insert(ignore_permissions=True)
 	frappe.db.commit()
 
-	# Send OTP for email verification / auto-login
 	otp = str(random.randint(100000, 999999))
-	cache_key = f"donor_otp_{email}"
-	frappe.cache().set_value(cache_key, {"otp": otp, "donor": donor.name}, expires_in_sec=300)
 
-	frappe.enqueue(
-		_send_otp_email,
-		queue="short",
-		timeout=60,
-		email=email,
-		full_name=full_name,
-		otp=otp
-	)
-
-	return {"success": True, "message": "Account created! Please verify your email with the OTP we sent."}
+	if reg_channel == "whatsapp":
+		from techniti.whatsapp.whatsapp import SparklebotHandler
+		cache_key = f"donor_otp_wa_{digits}"
+		frappe.cache().set_value(cache_key, {"otp": otp, "donor": donor.name}, expires_in_sec=600)
+		handler = SparklebotHandler()
+		if handler.is_enabled():
+			handler.send_template(
+				phone=digits,
+				template_name="login",
+				language="en",
+				field_params={"field_1": otp},
+				doctype="Website Donor",
+				docname=donor.name,
+			)
+		masked = digits[:2] + "X" * (len(digits) - 4) + digits[-2:]
+		return {"success": True, "channel": "whatsapp", "identifier": digits, "masked": masked,
+				"message": "Account created! Please verify with the OTP sent to your WhatsApp."}
+	else:
+		cache_key = f"donor_otp_{email}"
+		frappe.cache().set_value(cache_key, {"otp": otp, "donor": donor.name}, expires_in_sec=300)
+		frappe.enqueue(
+			_send_otp_email,
+			queue="short",
+			timeout=60,
+			email=email,
+			full_name=full_name,
+			otp=otp
+		)
+		return {"success": True, "channel": "email", "identifier": email,
+				"message": "Account created! Please verify your email with the OTP we sent."}
 
 
 # ── Scheduler Tasks ──────────────────────────────────────────────────────────

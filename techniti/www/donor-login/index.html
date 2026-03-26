@@ -181,30 +181,26 @@
 	.alert-error { background: #fff0f0; color: #c0392b; border: 1px solid #f5c6cb; }
 	.alert-success { background: #f0fff8; color: #1a6b47; border: 1px solid #b2e8d4; }
 
-	/* OTP input */
-	.otp-group {
-		display: flex;
-		gap: 10px;
-		justify-content: center;
-		margin-bottom: 24px;
-	}
-
-	.otp-input {
-		width: 52px !important;
-		height: 60px;
-		text-align: center;
-		font-size: 24px;
+	/* Single OTP input */
+	.otp-single-input {
+		width: 100%;
+		padding: 18px 16px;
+		border: 2px solid #e0e0e0;
+		border-radius: 12px;
+		font-family: 'Open Sans', sans-serif;
+		font-size: 28px;
 		font-weight: 700;
-		border: 2px solid #e0e0e0 !important;
-		border-radius: 12px !important;
+		letter-spacing: 14px;
+		text-align: center;
 		color: var(--dark);
-		transition: border-color 0.2s;
 		outline: none;
+		margin-bottom: 24px;
+		transition: border-color 0.2s;
+		background: #fff;
 	}
-
-	.otp-input:focus {
-		border-color: var(--primary) !important;
-		box-shadow: 0 0 0 3px rgba(60,200,143,0.12) !important;
+	.otp-single-input:focus {
+		border-color: var(--primary);
+		box-shadow: 0 0 0 3px rgba(60,200,143,0.12);
 	}
 
 	.identifier-display {
@@ -262,6 +258,15 @@
 	#otp-section { display: none; }
 
 	.section-hidden { display: none !important; }
+
+	.channel-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+	.channel-btn {
+		flex: 1; padding: 10px 8px; border: 2px solid var(--primary);
+		border-radius: 10px; background: transparent; cursor: pointer;
+		font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: 600;
+		color: var(--primary); transition: background 0.2s, color 0.2s;
+	}
+	.channel-btn.active { background: var(--primary); color: #fff; }
 </style>
 {% endblock %}
 
@@ -283,9 +288,17 @@
 		<!-- ── LOGIN SECTION ── -->
 		<div id="login-section">
 			<div id="step1-alert" class="alert"></div>
-			<div class="form-group">
+			<div class="channel-toggle">
+				<button class="channel-btn active" id="btn-email-channel" onclick="switchChannel('email')">Email OTP</button>
+				<button class="channel-btn" id="btn-wa-channel" onclick="switchChannel('whatsapp')">WhatsApp OTP</button>
+			</div>
+			<div class="form-group" id="email-input-group">
 				<label for="identifier">Email Address</label>
 				<input type="email" id="identifier" placeholder="your@email.com" autocomplete="email">
+			</div>
+			<div class="form-group" id="mobile-input-group" style="display:none">
+				<label for="mobile-login">Mobile Number</label>
+				<input type="tel" id="mobile-login" placeholder="e.g. 9876543210" autocomplete="tel">
 			</div>
 			<button class="btn-primary" id="send-otp-btn" onclick="sendOtp()">
 				Send OTP
@@ -295,16 +308,22 @@
 		<!-- ── REGISTER SECTION ── -->
 		<div id="reg-section" style="display:none">
 			<div id="reg-alert" class="alert"></div>
+			<!-- Registration channel selector -->
+			<div class="channel-toggle">
+				<button class="channel-btn active" id="btn-reg-email" onclick="switchRegChannel('email')">Register with Email</button>
+				<button class="channel-btn" id="btn-reg-mobile" onclick="switchRegChannel('whatsapp')">Register with Mobile</button>
+			</div>
 			<div class="form-group">
 				<label for="reg-name">Full Name</label>
 				<input type="text" id="reg-name" placeholder="Your full name" autocomplete="name">
 			</div>
-			<div class="form-group">
-				<label for="reg-email">Email Address</label>
+			<!-- Primary field: shown as required based on channel -->
+			<div class="form-group" id="reg-email-group">
+				<label for="reg-email" id="reg-email-label">Email Address</label>
 				<input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email">
 			</div>
-			<div class="form-group">
-				<label for="reg-mobile">Mobile Number <span class="optional-label">(optional)</span></label>
+			<div class="form-group" id="reg-mobile-group">
+				<label for="reg-mobile" id="reg-mobile-label">Mobile Number <span class="optional-label">(optional)</span></label>
 				<input type="tel" id="reg-mobile" placeholder="10-digit mobile number" autocomplete="tel">
 			</div>
 			<div class="form-row">
@@ -332,14 +351,9 @@
 			<div class="identifier-display">
 				OTP sent to <strong id="identifier-display-text"></strong>
 			</div>
-			<div class="otp-group" id="otp-group">
-				<input type="tel" class="otp-input" maxlength="1" data-index="0" onkeydown="handleOtpKey(event, 0)" oninput="handleOtpInput(event, 0)">
-				<input type="tel" class="otp-input" maxlength="1" data-index="1" onkeydown="handleOtpKey(event, 1)" oninput="handleOtpInput(event, 1)">
-				<input type="tel" class="otp-input" maxlength="1" data-index="2" onkeydown="handleOtpKey(event, 2)" oninput="handleOtpInput(event, 2)">
-				<input type="tel" class="otp-input" maxlength="1" data-index="3" onkeydown="handleOtpKey(event, 3)" oninput="handleOtpInput(event, 3)">
-				<input type="tel" class="otp-input" maxlength="1" data-index="4" onkeydown="handleOtpKey(event, 4)" oninput="handleOtpInput(event, 4)">
-				<input type="tel" class="otp-input" maxlength="1" data-index="5" onkeydown="handleOtpKey(event, 5)" oninput="handleOtpInput(event, 5)">
-			</div>
+			<input type="tel" id="otp-single" class="otp-single-input" maxlength="6"
+				placeholder="——————" autocomplete="one-time-code"
+				oninput="handleOtpInput(event)" onkeydown="handleOtpKey(event)">
 			<button class="btn-primary" id="verify-otp-btn" onclick="verifyOtp()">
 				Verify & Login
 			</button>
@@ -360,7 +374,9 @@
 	let currentIdentifier = '';
 	let timerInterval = null;
 	let afterLoginRedirect = '/donor-portal';
-	let currentMode = 'login'; // 'login' or 'register'
+	let currentMode = 'login';    // 'login' or 'register'
+	let currentChannel = 'email'; // login channel: 'email' or 'whatsapp'
+	let regChannel = 'email';     // registration channel: 'email' or 'whatsapp'
 
 	function showAlert(alertId, message, type) {
 		const el = document.getElementById(alertId);
@@ -400,19 +416,81 @@
 		}
 	}
 
-	function showOtpStep(email) {
+	function showOtpStep(displayText) {
 		document.getElementById('tab-group').style.display = 'none';
 		document.getElementById('login-section').style.display = 'none';
 		document.getElementById('reg-section').style.display = 'none';
 		document.getElementById('otp-section').style.display = 'block';
-		document.getElementById('identifier-display-text').textContent = email;
+		document.getElementById('identifier-display-text').textContent = displayText;
 		hideAlert('step2-alert');
-		clearOtpInputs();
-		document.querySelector('.otp-input').focus();
+		clearOtpInput();
+		document.getElementById('otp-single').focus();
 		startResendTimer();
 	}
 
+	// ── Login channel toggle ──────────────────────────────────────────────────
+
+	function switchChannel(channel) {
+		currentChannel = channel;
+		document.getElementById('btn-email-channel').classList.toggle('active', channel === 'email');
+		document.getElementById('btn-wa-channel').classList.toggle('active', channel === 'whatsapp');
+		document.getElementById('email-input-group').style.display = channel === 'email' ? '' : 'none';
+		document.getElementById('mobile-input-group').style.display = channel === 'whatsapp' ? '' : 'none';
+		hideAlert('step1-alert');
+	}
+
+	// ── Registration channel toggle ───────────────────────────────────────────
+
+	function switchRegChannel(channel) {
+		regChannel = channel;
+		document.getElementById('btn-reg-email').classList.toggle('active', channel === 'email');
+		document.getElementById('btn-reg-mobile').classList.toggle('active', channel === 'whatsapp');
+
+		if (channel === 'email') {
+			// Email is required, mobile is optional
+			document.getElementById('reg-email-label').innerHTML = 'Email Address';
+			document.getElementById('reg-mobile-label').innerHTML = 'Mobile Number <span class="optional-label">(optional)</span>';
+		} else {
+			// Mobile is required, email is optional
+			document.getElementById('reg-mobile-label').innerHTML = 'Mobile Number';
+			document.getElementById('reg-email-label').innerHTML = 'Email Address <span class="optional-label">(optional)</span>';
+		}
+		hideAlert('reg-alert');
+	}
+
+	// ── Login OTP ─────────────────────────────────────────────────────────────
+
+	async function sendWhatsappOtp() {
+		const mobile = document.getElementById('mobile-login').value.trim();
+		if (!mobile) {
+			showAlert('step1-alert', 'Please enter your mobile number.', 'alert-error');
+			return;
+		}
+		hideAlert('step1-alert');
+		setLoading('send-otp-btn', true, 'Sending OTP...');
+
+		try {
+			const res = await frappe.call({
+				method: 'techniti.api.request_donor_whatsapp_otp',
+				args: { mobile }
+			});
+			const data = res.message;
+			if (data && data.success) {
+				currentIdentifier = mobile.replace(/\D/g, '');
+				afterLoginRedirect = '/donor-portal';
+				showOtpStep(data.masked || mobile);
+			} else {
+				showAlert('step1-alert', (data && data.message) || 'Failed to send OTP. Please try again.', 'alert-error');
+			}
+		} catch (err) {
+			showAlert('step1-alert', 'An error occurred. Please try again.', 'alert-error');
+		} finally {
+			setLoading('send-otp-btn', false, 'Send OTP');
+		}
+	}
+
 	async function sendOtp() {
+		if (currentChannel === 'whatsapp') return sendWhatsappOtp();
 		const identifier = document.getElementById('identifier').value.trim();
 		if (!identifier) {
 			showAlert('step1-alert', 'Please enter your email address.', 'alert-error');
@@ -441,6 +519,8 @@
 		}
 	}
 
+	// ── Registration ──────────────────────────────────────────────────────────
+
 	async function registerDonor() {
 		const fullName = document.getElementById('reg-name').value.trim();
 		const email = document.getElementById('reg-email').value.trim();
@@ -449,23 +529,27 @@
 		const idNumber = document.getElementById('reg-id-number').value.trim();
 
 		if (!fullName) { showAlert('reg-alert', 'Please enter your full name.', 'alert-error'); return; }
-		if (!email) { showAlert('reg-alert', 'Please enter your email address.', 'alert-error'); return; }
+		if (regChannel === 'email' && !email) { showAlert('reg-alert', 'Please enter your email address.', 'alert-error'); return; }
+		if (regChannel === 'whatsapp' && !mobile) { showAlert('reg-alert', 'Please enter your mobile number.', 'alert-error'); return; }
+
 		hideAlert('reg-alert');
 		setLoading('reg-submit-btn', true, 'Creating Account...');
 
 		try {
 			const res = await frappe.call({
 				method: 'techniti.api.register_donor',
-				args: { full_name: fullName, email, mobile, id_type: idType, id_number: idNumber }
+				args: { full_name: fullName, email, mobile, reg_channel: regChannel, id_type: idType, id_number: idNumber }
 			});
 			const data = res.message;
 			if (data && data.success) {
-				currentIdentifier = email;
+				// Sync login channel to match how registration OTP was sent
+				currentChannel = data.channel;
+				currentIdentifier = data.identifier;
 				afterLoginRedirect = '/donate';
-				showOtpStep(email);
+				showOtpStep(data.masked || data.identifier);
 			} else if (data && data.exists) {
-				showAlert('reg-alert', data.message + ' <a href="#" onclick="showTab(\'login\'); return false;">Login here</a>', 'alert-error');
-				document.getElementById('reg-alert').innerHTML = data.message + ' <a href="#" onclick="showTab(\'login\'); return false;">Login here</a>';
+				document.getElementById('reg-alert').innerHTML =
+					data.message + ' <a href="#" onclick="showTab(\'login\'); return false;">Login here</a>';
 				document.getElementById('reg-alert').className = 'alert alert-error show';
 			} else {
 				showAlert('reg-alert', (data && data.message) || 'Registration failed. Please try again.', 'alert-error');
@@ -477,41 +561,28 @@
 		}
 	}
 
-	function handleOtpInput(event, index) {
-		const inputs = document.querySelectorAll('.otp-input');
-		const val = event.target.value;
-		if (!/^\d$/.test(val)) {
-			event.target.value = '';
-			return;
-		}
-		if (index < 5) {
-			inputs[index + 1].focus();
-		} else {
-			verifyOtp();
-		}
+	// ── OTP input (single field) ──────────────────────────────────────────────
+
+	function handleOtpInput(event) {
+		// Strip non-digits
+		const cleaned = event.target.value.replace(/\D/g, '').slice(0, 6);
+		event.target.value = cleaned;
+		if (cleaned.length === 6) verifyOtp();
 	}
 
-	function handleOtpKey(event, index) {
-		const inputs = document.querySelectorAll('.otp-input');
-		if (event.key === 'Backspace') {
-			if (!inputs[index].value && index > 0) {
-				inputs[index - 1].focus();
-				inputs[index - 1].value = '';
-			}
-		} else if (event.key === 'ArrowLeft' && index > 0) {
-			inputs[index - 1].focus();
-		} else if (event.key === 'ArrowRight' && index < 5) {
-			inputs[index + 1].focus();
-		}
+	function handleOtpKey(event) {
+		if (event.key === 'Enter') verifyOtp();
 	}
 
 	function getOtpValue() {
-		return Array.from(document.querySelectorAll('.otp-input')).map(i => i.value).join('');
+		return document.getElementById('otp-single').value.replace(/\D/g, '');
 	}
 
-	function clearOtpInputs() {
-		document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+	function clearOtpInput() {
+		document.getElementById('otp-single').value = '';
 	}
+
+	// ── OTP verify ────────────────────────────────────────────────────────────
 
 	async function verifyOtp() {
 		const otp = getOtpValue();
@@ -523,26 +594,31 @@
 		setLoading('verify-otp-btn', true, 'Verifying...');
 
 		try {
-			const res = await frappe.call({
-				method: 'techniti.api.verify_donor_otp',
-				args: { identifier: currentIdentifier, otp }
-			});
+			const method = currentChannel === 'whatsapp'
+				? 'techniti.api.verify_donor_whatsapp_otp'
+				: 'techniti.api.verify_donor_otp';
+			const args = currentChannel === 'whatsapp'
+				? { mobile: currentIdentifier, otp }
+				: { identifier: currentIdentifier, otp };
+			const res = await frappe.call({ method, args });
 			const data = res.message;
 			if (data && data.success) {
 				showAlert('step2-alert', 'Success! Redirecting...', 'alert-success');
 				setTimeout(() => { window.location.href = afterLoginRedirect; }, 800);
 			} else {
 				showAlert('step2-alert', (data && data.message) || 'Invalid OTP. Please try again.', 'alert-error');
-				clearOtpInputs();
-				document.querySelector('.otp-input').focus();
+				clearOtpInput();
+				document.getElementById('otp-single').focus();
 			}
 		} catch (err) {
 			showAlert('step2-alert', 'Verification failed. Please try again.', 'alert-error');
-			clearOtpInputs();
+			clearOtpInput();
 		} finally {
 			setLoading('verify-otp-btn', false, 'Verify & Login');
 		}
 	}
+
+	// ── Resend timer ──────────────────────────────────────────────────────────
 
 	function startResendTimer() {
 		clearInterval(timerInterval);
@@ -564,6 +640,25 @@
 
 	async function resendOtp() {
 		hideAlert('step2-alert');
+		if (currentChannel === 'whatsapp') {
+			try {
+				const res = await frappe.call({
+					method: 'techniti.api.request_donor_whatsapp_otp',
+					args: { mobile: currentIdentifier }
+				});
+				const data = res.message;
+				if (data && data.success) {
+					showAlert('step2-alert', 'A new OTP has been sent to your WhatsApp.', 'alert-success');
+					clearOtpInput();
+					startResendTimer();
+				} else {
+					showAlert('step2-alert', (data && data.message) || 'Failed to resend OTP.', 'alert-error');
+				}
+			} catch (err) {
+				showAlert('step2-alert', 'Failed to resend OTP. Please try again.', 'alert-error');
+			}
+			return;
+		}
 		try {
 			const res = await frappe.call({
 				method: 'techniti.api.request_donor_otp',
@@ -572,7 +667,7 @@
 			const data = res.message;
 			if (data && data.success) {
 				showAlert('step2-alert', 'A new OTP has been sent.', 'alert-success');
-				clearOtpInputs();
+				clearOtpInput();
 				startResendTimer();
 			} else {
 				showAlert('step2-alert', (data && data.message) || 'Failed to resend OTP.', 'alert-error');
@@ -581,6 +676,8 @@
 			showAlert('step2-alert', 'Failed to resend OTP. Please try again.', 'alert-error');
 		}
 	}
+
+	// ── Go back ───────────────────────────────────────────────────────────────
 
 	function goBack() {
 		clearInterval(timerInterval);
@@ -596,11 +693,14 @@
 		hideAlert('step1-alert');
 		hideAlert('reg-alert');
 		hideAlert('step2-alert');
-		clearOtpInputs();
+		clearOtpInput();
 	}
 
-	// Allow Enter key on email fields
+	// ── Enter key shortcuts ───────────────────────────────────────────────────
 	document.getElementById('identifier').addEventListener('keypress', function(e) {
+		if (e.key === 'Enter') sendOtp();
+	});
+	document.getElementById('mobile-login').addEventListener('keypress', function(e) {
 		if (e.key === 'Enter') sendOtp();
 	});
 	document.getElementById('reg-id-number').addEventListener('keypress', function(e) {
