@@ -58,6 +58,7 @@ class WebsiteDonation(Document):
 			self.mode_of_payment = payment_method
 		self.save(ignore_permissions=True)
 		if self.docstatus == 0:
+			self.flags.ignore_permissions = True
 			self.submit()
 
 	def on_payment_failure(self):

@@ -83,7 +83,7 @@ class SparklebotHandler:
         return self._send_text_message(clean_phone, message, doctype, docname)
 
     def send_template(self, phone, template_name, language, field_params,
-                      doctype=None, docname=None):
+                      doctype=None, docname=None, header_document_url=None):
         """
         Send a pre-approved WhatsApp template message.
 
@@ -92,6 +92,7 @@ class SparklebotHandler:
             template_name: Sparklebot template name
             language: language code (e.g. "en")
             field_params: dict  {"field_1": "Rohan", "field_2": "₹500", ...}
+            header_document_url: optional PDF URL for document header component
         """
         if not self.is_enabled():
             frappe.log_error("WhatsApp not configured", "WhatsApp Settings")
@@ -106,7 +107,8 @@ class SparklebotHandler:
             return False
 
         return self._send_template_message(
-            clean_phone, template_name, language, field_params, doctype, docname
+            clean_phone, template_name, language, field_params, doctype, docname,
+            header_document_url=header_document_url
         )
 
     # ------------------------------------------------------------------
@@ -132,7 +134,8 @@ class SparklebotHandler:
             return False
 
     def _send_template_message(self, phone, template_name, language,
-                               field_params, doctype, docname):
+                               field_params, doctype, docname,
+                               header_document_url=None):
         """POST to /messages/template"""
         url = f"{self.base_url}/messages/template"
         payload = {
@@ -140,6 +143,8 @@ class SparklebotHandler:
             "template_name": template_name,
             "template_language": language or "en"
         }
+        if header_document_url:
+            payload["header_document_url"] = header_document_url
         payload.update(field_params)  # merges field_1, field_2, ...
 
         try:
@@ -1067,13 +1072,17 @@ def _dispatch_message(handler, recipient, doc, notification,
             and template_doc.message_type == "template"
             and template_doc.wa_template_name):
         field_params = TemplateParameterBuilder.build(template_doc, doc)
+        header_url = None
+        if template_doc.header_document_field:
+            header_url = doc.get(template_doc.header_document_field) or None
         return handler.send_template(
             phone,
             template_doc.wa_template_name,
             template_doc.template_language or "en",
             field_params,
             doc.doctype,
-            doc.name
+            doc.name,
+            header_document_url=header_url
         )
 
     # Text mode (default)
@@ -1140,26 +1149,53 @@ _EXCLUDED_DOCTYPES = frozenset([
 ])
 
 
+def _run_whatsapp_notification_bg(doctype, docname, trigger_event):
+    """RQ worker: reloads the document from DB and runs WhatsApp notification logic."""
+    try:
+        doc = frappe.get_doc(doctype, docname)
+        _handle_whatsapp_notification(doc, None, trigger_event)
+    except Exception as e:
+        frappe.log_error(
+            title=f"WhatsApp BG Worker Error - {doctype}",
+            message=f"DocType: {doctype} | Name: {docname} | Event: {trigger_event}\n{str(e)}"
+        )
+
+
+def _enqueue_whatsapp_notification(doc, trigger_event):
+    # Gate before enqueueing — excluded doctypes have ephemeral records that
+    # may not exist by the time the RQ worker runs (e.g. Version, Activity Log).
+    if doc.doctype in _EXCLUDED_DOCTYPES:
+        return
+    frappe.enqueue(
+        "techniti.whatsapp.whatsapp._run_whatsapp_notification_bg",
+        queue="short",
+        timeout=120,
+        doctype=doc.doctype,
+        docname=doc.name,
+        trigger_event=trigger_event,
+    )
+
+
 def handle_whatsapp_notification_submit(doc, method):
-    _handle_whatsapp_notification(doc, method, "Submit")
+    _enqueue_whatsapp_notification(doc, "Submit")
 
 
 def handle_whatsapp_notification_save(doc, method):
-    _handle_whatsapp_notification(doc, method, "Save")
+    _enqueue_whatsapp_notification(doc, "Save")
 
 
 def handle_whatsapp_notification_cancel(doc, method):
-    _handle_whatsapp_notification(doc, method, "Cancel")
+    _enqueue_whatsapp_notification(doc, "Cancel")
 
 
 def handle_whatsapp_notification_creation(doc, method):
-    _handle_whatsapp_notification(doc, method, "On Creation")
+    _enqueue_whatsapp_notification(doc, "On Creation")
 
 
 def handle_whatsapp_notification_update(doc, method):
     if doc.is_new():
         return
-    _handle_whatsapp_notification(doc, method, "On Update")
+    _enqueue_whatsapp_notification(doc, "On Update")
 
 
 def _handle_whatsapp_notification(doc, method, trigger_event):

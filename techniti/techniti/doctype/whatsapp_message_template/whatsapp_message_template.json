@@ -15,6 +15,7 @@
   "section_break_template",
   "wa_template_name",
   "template_language",
+  "header_document_field",
   "section_break_params",
   "parameters"
  ],
@@ -80,6 +81,13 @@
    "fieldtype": "Data",
    "label": "Language Code",
    "description": "e.g. en, en_GB, hi"
+  },
+  {
+   "depends_on": "eval:doc.message_type==\"template\"",
+   "fieldname": "header_document_field",
+   "fieldtype": "Data",
+   "label": "Header PDF Field",
+   "description": "Fieldname on the document that holds the PDF file URL (e.g. custom_pdf_url). Leave blank if template has no document header."
   },
   {
    "depends_on": "eval:doc.message_type==\"template\"",

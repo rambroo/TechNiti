@@ -43,7 +43,10 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Website Donor": "public/js/website_donor.js"}
+doctype_js = {
+	"Website Donor": "public/js/website_donor.js",
+	"Website Donation": "public/js/website_donation.js",
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -139,7 +142,10 @@ doctype_js = {"Website Donor": "public/js/website_donor.js"}
 
 doc_events = {
 	"Website Donation": {
-		"on_submit": "techniti.api.update_stats_on_donation",
+		"on_submit": [
+			"techniti.donation_pdf.on_donation_submit",       # PDF first (FIFO before WhatsApp)
+			"techniti.api.update_stats_on_donation",
+		],
 		"on_cancel": "techniti.api.update_stats_on_donation"
 	},
 	"Website Donation Subscription": {
@@ -148,7 +154,7 @@ doc_events = {
 	# WhatsApp notification handlers — fires for every doctype
 	"*": {
 		"on_submit":    "techniti.whatsapp.whatsapp.handle_whatsapp_notification_submit",
-		"before_save":  "techniti.whatsapp.whatsapp.handle_whatsapp_notification_save",
+		"after_save":   "techniti.whatsapp.whatsapp.handle_whatsapp_notification_save",
 		"on_cancel":    "techniti.whatsapp.whatsapp.handle_whatsapp_notification_cancel",
 		"after_insert": "techniti.whatsapp.whatsapp.handle_whatsapp_notification_creation",
 		"on_update":    "techniti.whatsapp.whatsapp.handle_whatsapp_notification_update"

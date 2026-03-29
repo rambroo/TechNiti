@@ -375,6 +375,7 @@ def razorpay_webhook():
 					donation.payment_status = "Captured"
 					donation.save(ignore_permissions=True)
 					if donation.docstatus == 0:
+						donation.flags.ignore_permissions = True
 						donation.submit()
 					frappe.db.commit()
 					frappe.enqueue(
