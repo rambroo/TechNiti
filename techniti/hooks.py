@@ -150,7 +150,7 @@ attach_pdf_config = {
 
 doc_events = {
 	"Ticket": {
-		"before_save": "techniti.attach_pdf.on_submit_attach_pdf",
+		"on_submit": "techniti.attach_pdf.on_submit_attach_pdf",
 	},
 	"Website Donation": {
 		"on_submit": [

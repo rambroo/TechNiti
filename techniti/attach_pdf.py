@@ -214,13 +214,17 @@ def _delete_existing_pdf(doctype, docname, pdf_url_field):
 
 def _localize_html(html):
     """
-    Replace relative and site-absolute asset URLs with http://127.0.0.1:PORT/...
-    so wkhtmltopdf fetches CSS/JS/images from the local Gunicorn process instead
-    of trying to reach the external hostname (which fails in RQ background jobs).
+    1. Strip all <img> tags — prevents wkhtmltopdf from fetching any images
+       (letterhead logos, etc.) that are unreachable from the RQ worker process.
+       Our custom print formats are CSS-only and contain no meaningful images.
 
-    Frappe's scrub_urls() inside get_pdf() only converts paths that do NOT
-    start with 'http', so pre-converting to localhost leaves them untouched.
+    2. Replace relative and site-absolute asset URLs with http://127.0.0.1:PORT/
+       so wkhtmltopdf fetches CSS from the local Gunicorn process instead of
+       trying to reach the external hostname (which fails in RQ background jobs).
     """
+    # Strip all img tags — root cause of "broken image links" on production
+    html = re.sub(r'<img[^>]*>', '', html, flags=re.IGNORECASE)
+
     site_url = get_url().rstrip("/")
     conf = frappe.get_site_config()
     port = conf.get("http_port") or conf.get("webserver_port") or 8000
