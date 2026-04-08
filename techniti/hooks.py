@@ -147,9 +147,9 @@ attach_pdf_config = {
 }
 
 doc_events = {
-	"Ticket": {
-		"on_submit": "techniti.attach_pdf.on_submit_attach_pdf",
-	},
+	# "Ticket": {
+	# 	"on_submit": "techniti.attach_pdf.on_submit_attach_pdf",
+	# },
 	"Website Donation": {
 		"on_submit": [
 			"techniti.attach_pdf.on_submit_attach_pdf",        # PDF first (FIFO before WhatsApp)

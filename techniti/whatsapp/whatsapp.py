@@ -1151,8 +1151,21 @@ _EXCLUDED_DOCTYPES = frozenset([
 
 def _run_whatsapp_notification_bg(doctype, docname, trigger_event):
     """RQ worker: reloads the document from DB and runs WhatsApp notification logic."""
+    import time
     try:
-        doc = frappe.get_doc(doctype, docname)
+        # Retry up to 3x with a short delay — the BG job can start before the
+        # main transaction commits (after_insert / on_update), so the doc may
+        # not exist yet. This fixes "X not found" errors across all doctypes.
+        doc = None
+        for _ in range(3):
+            if frappe.db.exists(doctype, docname):
+                doc = frappe.get_doc(doctype, docname)
+                break
+            time.sleep(2)
+
+        if doc is None:
+            return  # genuinely deleted or never committed — skip silently
+
         _handle_whatsapp_notification(doc, None, trigger_event)
     except Exception as e:
         frappe.log_error(
