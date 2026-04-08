@@ -1,0 +1,118 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:WCWW-Play For Cause-{####}",
+ "creation": "2026-03-30 00:19:30.994694",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "event_name",
+  "name1",
+  "contact_number",
+  "email",
+  "no_of_tickets",
+  "amount_paid",
+  "payment_screenshot",
+  "payment_reference",
+  "message",
+  "confirmation",
+  "custom_pdf_url"
+ ],
+ "fields": [
+  {
+   "fieldname": "event_name",
+   "fieldtype": "Heading",
+   "label": "Play For Cause"
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Full Name",
+   "reqd": 1
+  },
+  {
+   "default": "+91-",
+   "fieldname": "contact_number",
+   "fieldtype": "Phone",
+   "label": "Contact Number",
+   "options": "Phone",
+   "reqd": 1
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email Address",
+   "options": "Email",
+   "reqd": 1
+  },
+  {
+   "fieldname": "no_of_tickets",
+   "fieldtype": "Int",
+   "label": "Number of Tickets",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amount_paid",
+   "fieldtype": "Currency",
+   "label": "Amount Paid"
+  },
+  {
+   "fieldname": "payment_screenshot",
+   "fieldtype": "Attach",
+   "label": "Upload Payment Screenshot",
+   "reqd": 1
+  },
+  {
+   "fieldname": "payment_reference",
+   "fieldtype": "Data",
+   "label": "UPI / Payment Reference",
+   "reqd": 1
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Small Text",
+   "label": "Message or Query"
+  },
+  {
+   "fieldname": "confirmation",
+   "fieldtype": "Check",
+   "label": "I confirm that the details provided are correct and I will complete the payment once contacted by the team"
+  },
+  {
+   "fieldname": "custom_pdf_url",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "PDF URL"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-04-07 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Techniti",
+ "name": "Ticket",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

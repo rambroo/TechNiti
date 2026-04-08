@@ -141,9 +141,12 @@ doctype_js = {
 # Hook on document methods and events
 
 doc_events = {
+	"Ticket": {
+		"on_submit": "techniti.attach_pdf.on_submit_attach_pdf",
+	},
 	"Website Donation": {
 		"on_submit": [
-			"techniti.donation_pdf.on_donation_submit",       # PDF first (FIFO before WhatsApp)
+			"techniti.attach_pdf.on_submit_attach_pdf",        # PDF first (FIFO before WhatsApp)
 			"techniti.api.update_stats_on_donation",
 		],
 		"on_cancel": "techniti.api.update_stats_on_donation"
