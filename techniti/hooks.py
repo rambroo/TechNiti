@@ -142,14 +142,16 @@ doctype_js = {
 
 attach_pdf_config = {
 	"Ticket": {
-		"enqueue": False,   # sync — so custom_pdf_url is populated before WhatsApp fires
+		"print_format":  "TICKET",  # complete HTML print format — no letterhead needed
+		"no_letterhead": 1,         # skip letterhead to avoid broken image errors on live
+		"enqueue":       False,     # sync — custom_pdf_url must be set before WhatsApp fires
 	},
 }
 
 doc_events = {
-	# "Ticket": {
-	# 	"on_submit": "techniti.attach_pdf.on_submit_attach_pdf",
-	# },
+	"Ticket": {
+		"on_submit": "techniti.attach_pdf.on_submit_attach_pdf",
+	},
 	"Website Donation": {
 		"on_submit": [
 			"techniti.attach_pdf.on_submit_attach_pdf",        # PDF first (FIFO before WhatsApp)

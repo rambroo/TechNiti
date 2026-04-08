@@ -74,8 +74,9 @@ def on_submit_attach_pdf(doc, method):
         }
     """
     config = _get_config(doc.doctype)
-    pdf_url_field = config.get("pdf_url_field", DEFAULT_PDF_URL_FIELD)
-    print_format  = config.get("print_format")
+    pdf_url_field  = config.get("pdf_url_field", DEFAULT_PDF_URL_FIELD)
+    print_format   = config.get("print_format")
+    no_letterhead  = config.get("no_letterhead", 0)
     should_enqueue = config.get("enqueue", True)   # default: async
 
     if should_enqueue:
@@ -87,16 +88,17 @@ def on_submit_attach_pdf(doc, method):
             docname=doc.name,
             pdf_url_field=pdf_url_field,
             print_format=print_format,
+            no_letterhead=no_letterhead,
         )
     else:
-        generate_and_attach_pdf(doc.doctype, doc.name, pdf_url_field=pdf_url_field, print_format=print_format)
+        generate_and_attach_pdf(doc.doctype, doc.name, pdf_url_field=pdf_url_field, print_format=print_format, no_letterhead=no_letterhead)
 
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
-def generate_and_attach_pdf(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIELD, print_format=None):
+def generate_and_attach_pdf(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIELD, print_format=None, no_letterhead=0):
     """
     Generate a PDF for *doctype/docname*, save it as a public File attachment
     with a secure random token in the filename, and write the absolute URL to
@@ -111,7 +113,7 @@ def generate_and_attach_pdf(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIEL
     try:
         _delete_existing_pdf(doctype, docname, pdf_url_field)
 
-        html = frappe.get_print(doctype, docname, print_format=print_format, no_letterhead=0)
+        html = frappe.get_print(doctype, docname, print_format=print_format, no_letterhead=no_letterhead)
         html = _localize_html(html)
         pdf_bytes = get_pdf(html, options={"load-error-handling": "ignore"})
 
@@ -171,9 +173,9 @@ def regenerate_pdf(doctype, docname, pdf_url_field=None, print_format=None):
 # RQ background worker
 # ---------------------------------------------------------------------------
 
-def _generate_pdf_bg(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIELD, print_format=None):
+def _generate_pdf_bg(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIELD, print_format=None, no_letterhead=0):
     """Entry point called by the RQ worker process."""
-    generate_and_attach_pdf(doctype, docname, pdf_url_field=pdf_url_field, print_format=print_format)
+    generate_and_attach_pdf(doctype, docname, pdf_url_field=pdf_url_field, print_format=print_format, no_letterhead=no_letterhead)
 
 
 # ---------------------------------------------------------------------------
