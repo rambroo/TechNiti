@@ -140,6 +140,12 @@ doctype_js = {
 # ---------------
 # Hook on document methods and events
 
+attach_pdf_config = {
+	"Ticket": {
+		"enqueue": False,   # sync — so custom_pdf_url is populated before WhatsApp fires
+	},
+}
+
 doc_events = {
 	"Ticket": {
 		"on_submit": "techniti.attach_pdf.on_submit_attach_pdf",

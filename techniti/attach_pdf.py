@@ -113,7 +113,7 @@ def generate_and_attach_pdf(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIEL
 
         html = frappe.get_print(doctype, docname, print_format=print_format, no_letterhead=0)
         html = _localize_html(html)
-        pdf_bytes = get_pdf(html)
+        pdf_bytes = get_pdf(html, options={"load-error-handling": "ignore"})
 
         token = secrets.token_hex(8)
         safe_name = docname.replace("/", "-")
