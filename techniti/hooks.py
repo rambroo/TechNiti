@@ -143,7 +143,7 @@ doctype_js = {
 
 doc_events = {
 	"Ticket": {
-		"on_submit": "techniti.attach_pdf.on_submit_attach_pdf",
+		"before_save": "techniti.attach_pdf.on_submit_attach_pdf",
 	},
 	"Website Donation": {
 		"on_submit": [

@@ -113,28 +113,16 @@ def generate_and_attach_pdf(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIEL
     try:
         _delete_existing_pdf(doctype, docname, pdf_url_field)
 
-        if print_format and no_letterhead:
-            # ── Direct render path (Ticket) ──────────────────────────────────
-            # Fetch the print format Jinja HTML straight from DB and render it
-            # with the document context — no Frappe wrapper, no letterhead,
-            # no asset URL injection.
-            # Then call pdfkit DIRECTLY — bypasses frappe.utils.pdf.get_pdf()
-            # which runs scrub_urls() and injects external asset URLs that
-            # wkhtmltopdf cannot fetch from inside Frappe Cloud's worker containers.
-            pf_html  = frappe.db.get_value("Print Format", print_format, "html") or ""
-            doc_obj  = frappe.get_doc(doctype, docname)
-            html     = frappe.render_template(pf_html, {"doc": doc_obj})
-            pdf_bytes = _pdfkit_direct(html)
+        doc_obj = frappe.get_doc(doctype, docname)
+
+        if print_format:
+            pf_html = frappe.db.get_value("Print Format", print_format, "html") or ""
         else:
-            # ── Original path (Website Donation, etc.) ────────────────────────
-            # Unchanged from before — keeps existing PDF generation working.
-            html = frappe.get_print(
-                doctype, docname,
-                print_format=print_format,
-                no_letterhead=no_letterhead,
-            )
-            html = _localize_html(html)
-            pdf_bytes = _get_pdf_safe(html)
+            default_pf = frappe.get_meta(doctype).default_print_format
+            pf_html = frappe.db.get_value("Print Format", default_pf, "html") or ""
+
+        html = frappe.render_template(pf_html, {"doc": doc_obj})
+        pdf_bytes = _pdfkit_direct(html)
 
         token = secrets.token_hex(8)
         safe_name = docname.replace("/", "-")
@@ -244,10 +232,12 @@ def _pdfkit_direct(html):
     """
     import pdfkit
     _opts = {
-        "load-error-handling":      "ignore",
-        "encoding":                 "UTF-8",
-        "quiet":                    "",
+        "load-error-handling": "ignore",
+        "load-media-error-handling": "ignore",
+        "encoding": "UTF-8",
+        "quiet": "",
         "enable-local-file-access": "",
+        "disable-javascript": "",
     }
     pdf_bytes = pdfkit.from_string(html, False, options=_opts)
     if not pdf_bytes:
