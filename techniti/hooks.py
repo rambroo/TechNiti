@@ -140,13 +140,6 @@ doctype_js = {
 # ---------------
 # Hook on document methods and events
 
-attach_pdf_config = {
-	"Ticket": {
-		"print_format":  "TICKET",  # complete HTML print format — no letterhead needed
-		"no_letterhead": 1,         # skip letterhead to avoid broken image errors on live
-		"enqueue":       False,     # sync — custom_pdf_url must be set before WhatsApp fires
-	},
-}
 
 doc_events = {
 	"Ticket": {
