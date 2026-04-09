@@ -1,3 +1,46 @@
+"""
+Generic PDF generation and attachment for any Frappe DocType.
+
+─────────────────────────────────────────────────────────────────────────────
+TO ADD A NEW DOCTYPE — only touch hooks.py:
+─────────────────────────────────────────────────────────────────────────────
+
+1.  Add the hook trigger:
+
+        doc_events = {
+            "Your DocType": {
+                "on_submit": "techniti.attach_pdf.on_submit_attach_pdf",
+            }
+        }
+
+2.  Add config (optional — all keys have sensible defaults):
+
+        attach_pdf_config = {
+            "Your DocType": {
+                "pdf_url_field":  "custom_pdf_url",  # field to write URL into
+                "print_format":   None,               # None = DocType default
+                "enqueue":        True,               # False = generate inline (sync)
+            }
+        }
+
+That's it.  No code changes required.
+
+─────────────────────────────────────────────────────────────────────────────
+Security model
+─────────────────────────────────────────────────────────────────────────────
+Receipts are stored as *public* files so external callers (WhatsApp, email
+links, etc.) can fetch them without a Frappe session.  Guessability is
+prevented by embedding secrets.token_hex(8) (64 bits of entropy) in every
+filename, e.g.  WDON-2026-00001_3a9f1c7e4b82d051.pdf
+
+─────────────────────────────────────────────────────────────────────────────
+wkhtmltopdf / HostNotFoundError
+─────────────────────────────────────────────────────────────────────────────
+Frappe's get_pdf() calls scrub_urls() which expands relative asset paths to
+the external site URL.  RQ workers often can't resolve that hostname.
+_localize_html() pre-converts those paths to http://127.0.0.1:PORT/... so
+wkhtmltopdf fetches assets from the local Gunicorn process instead.
+"""
 import re
 import secrets
 from urllib.parse import urlparse
@@ -201,9 +244,10 @@ def _pdfkit_direct(html):
     """
     import pdfkit
     _opts = {
-        "load-error-handling": "ignore",
-        "encoding":            "UTF-8",
-        "quiet":               "",
+        "load-error-handling":      "ignore",
+        "encoding":                 "UTF-8",
+        "quiet":                    "",
+        "enable-local-file-access": "",
     }
     pdf_bytes = pdfkit.from_string(html, False, options=_opts)
     if not pdf_bytes:
