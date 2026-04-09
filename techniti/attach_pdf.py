@@ -113,8 +113,24 @@ def generate_and_attach_pdf(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIEL
     try:
         _delete_existing_pdf(doctype, docname, pdf_url_field)
 
-        html = frappe.get_print(doctype, docname, print_format=print_format, no_letterhead=no_letterhead)
-        html = _localize_html(html)
+        if print_format and no_letterhead:
+            # ── Direct render path (Ticket) ──────────────────────────────────
+            # Fetch the print format Jinja HTML straight from DB and render it
+            # with the document context — no Frappe wrapper, no letterhead,
+            # no asset URL injection.  Completely avoids the broken-image error.
+            pf_html  = frappe.db.get_value("Print Format", print_format, "html") or ""
+            doc_obj  = frappe.get_doc(doctype, docname)
+            html     = frappe.render_template(pf_html, {"doc": doc_obj})
+        else:
+            # ── Original path (Website Donation, etc.) ────────────────────────
+            # Unchanged from before — keeps existing PDF generation working.
+            html = frappe.get_print(
+                doctype, docname,
+                print_format=print_format,
+                no_letterhead=no_letterhead,
+            )
+            html = _localize_html(html)
+
         pdf_bytes = _get_pdf_safe(html)
 
         token = secrets.token_hex(8)
@@ -263,17 +279,13 @@ def _get_pdf_safe(html):
 
 def _localize_html(html):
     """
-    1. Strip all <img> tags — prevents wkhtmltopdf from fetching any images
-       (letterhead logos, etc.) that are unreachable from the RQ worker process.
-       Our custom print formats are CSS-only and contain no meaningful images.
+    Replace relative and site-absolute asset URLs with http://127.0.0.1:PORT/...
+    so wkhtmltopdf fetches CSS/JS/images from the local Gunicorn process instead
+    of trying to reach the external hostname (which fails in RQ background jobs).
 
-    2. Replace relative and site-absolute asset URLs with http://127.0.0.1:PORT/
-       so wkhtmltopdf fetches CSS from the local Gunicorn process instead of
-       trying to reach the external hostname (which fails in RQ background jobs).
+    Frappe's scrub_urls() inside get_pdf() only converts paths that do NOT
+    start with 'http', so pre-converting to localhost leaves them untouched.
     """
-    # Strip all img tags — root cause of "broken image links" on production
-    html = re.sub(r'<img[^>]*>', '', html, flags=re.IGNORECASE)
-
     site_url = get_url().rstrip("/")
     conf = frappe.get_site_config()
     port = conf.get("http_port") or conf.get("webserver_port") or 8000
