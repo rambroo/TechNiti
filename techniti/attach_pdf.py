@@ -1,46 +1,3 @@
-"""
-Generic PDF generation and attachment for any Frappe DocType.
-
-─────────────────────────────────────────────────────────────────────────────
-TO ADD A NEW DOCTYPE — only touch hooks.py:
-─────────────────────────────────────────────────────────────────────────────
-
-1.  Add the hook trigger:
-
-        doc_events = {
-            "Your DocType": {
-                "on_submit": "techniti.attach_pdf.on_submit_attach_pdf",
-            }
-        }
-
-2.  Add config (optional — all keys have sensible defaults):
-
-        attach_pdf_config = {
-            "Your DocType": {
-                "pdf_url_field":  "custom_pdf_url",  # field to write URL into
-                "print_format":   None,               # None = DocType default
-                "enqueue":        True,               # False = generate inline (sync)
-            }
-        }
-
-That's it.  No code changes required.
-
-─────────────────────────────────────────────────────────────────────────────
-Security model
-─────────────────────────────────────────────────────────────────────────────
-Receipts are stored as *public* files so external callers (WhatsApp, email
-links, etc.) can fetch them without a Frappe session.  Guessability is
-prevented by embedding secrets.token_hex(8) (64 bits of entropy) in every
-filename, e.g.  WDON-2026-00001_3a9f1c7e4b82d051.pdf
-
-─────────────────────────────────────────────────────────────────────────────
-wkhtmltopdf / HostNotFoundError
-─────────────────────────────────────────────────────────────────────────────
-Frappe's get_pdf() calls scrub_urls() which expands relative asset paths to
-the external site URL.  RQ workers often can't resolve that hostname.
-_localize_html() pre-converts those paths to http://127.0.0.1:PORT/... so
-wkhtmltopdf fetches assets from the local Gunicorn process instead.
-"""
 import re
 import secrets
 from urllib.parse import urlparse
@@ -117,10 +74,14 @@ def generate_and_attach_pdf(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIEL
             # ── Direct render path (Ticket) ──────────────────────────────────
             # Fetch the print format Jinja HTML straight from DB and render it
             # with the document context — no Frappe wrapper, no letterhead,
-            # no asset URL injection.  Completely avoids the broken-image error.
+            # no asset URL injection.
+            # Then call pdfkit DIRECTLY — bypasses frappe.utils.pdf.get_pdf()
+            # which runs scrub_urls() and injects external asset URLs that
+            # wkhtmltopdf cannot fetch from inside Frappe Cloud's worker containers.
             pf_html  = frappe.db.get_value("Print Format", print_format, "html") or ""
             doc_obj  = frappe.get_doc(doctype, docname)
             html     = frappe.render_template(pf_html, {"doc": doc_obj})
+            pdf_bytes = _pdfkit_direct(html)
         else:
             # ── Original path (Website Donation, etc.) ────────────────────────
             # Unchanged from before — keeps existing PDF generation working.
@@ -130,8 +91,7 @@ def generate_and_attach_pdf(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIEL
                 no_letterhead=no_letterhead,
             )
             html = _localize_html(html)
-
-        pdf_bytes = _get_pdf_safe(html)
+            pdf_bytes = _get_pdf_safe(html)
 
         token = secrets.token_hex(8)
         safe_name = docname.replace("/", "-")
@@ -226,6 +186,29 @@ def _delete_existing_pdf(doctype, docname, pdf_url_field):
             frappe.delete_doc("File", f.name, ignore_permissions=True, force=True)
         except Exception:
             pass
+
+
+def _pdfkit_direct(html):
+    """
+    Convert HTML to PDF using pdfkit directly — completely bypasses
+    frappe.utils.pdf.get_pdf() and its scrub_urls() call.
+
+    scrub_urls() rewrites relative paths like /assets/... to
+    https://site.frappe.cloud/assets/... which wkhtmltopdf cannot fetch
+    from inside Frappe Cloud's containerised RQ workers.  Calling pdfkit
+    directly means the HTML is passed as-is: no URL rewriting, no network
+    calls, no ContentNotFoundError.
+    """
+    import pdfkit
+    _opts = {
+        "load-error-handling": "ignore",
+        "encoding":            "UTF-8",
+        "quiet":               "",
+    }
+    pdf_bytes = pdfkit.from_string(html, False, options=_opts)
+    if not pdf_bytes:
+        frappe.throw("PDF generation returned empty output.")
+    return pdf_bytes
 
 
 def _get_pdf_safe(html):
