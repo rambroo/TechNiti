@@ -115,7 +115,7 @@ def generate_and_attach_pdf(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIEL
 
         html = frappe.get_print(doctype, docname, print_format=print_format, no_letterhead=no_letterhead)
         html = _localize_html(html)
-        pdf_bytes = get_pdf(html, options={"load-error-handling": "ignore"})
+        pdf_bytes = _get_pdf_safe(html)
 
         token = secrets.token_hex(8)
         safe_name = docname.replace("/", "-")
@@ -210,6 +210,55 @@ def _delete_existing_pdf(doctype, docname, pdf_url_field):
             frappe.delete_doc("File", f.name, ignore_permissions=True, force=True)
         except Exception:
             pass
+
+
+def _get_pdf_safe(html):
+    """
+    Generate PDF bytes, bypassing Frappe's broken-image check when needed.
+
+    Frappe's get_pdf() catches wkhtmltopdf's OSError and re-raises it as a
+    ValidationError("PDF generation failed because of broken image links")
+    ONLY when the resulting filedata is empty.  The --load-error-handling ignore
+    flag tells wkhtmltopdf to continue despite missing images, but it still
+    writes "ContentNotFoundError" to stderr — which Frappe intercepts.
+
+    Strategy:
+      1. Try Frappe's get_pdf() with load-error-handling:ignore (works most of
+         the time once the option actually reaches wkhtmltopdf).
+      2. If Frappe still throws "broken image links", strip ALL <img> tags and
+         external url() references from the HTML and call pdfkit directly —
+         completely bypassing Frappe's error check.
+    """
+    from frappe.utils.pdf import get_pdf
+
+    _opts = {"load-error-handling": "ignore", "quiet": ""}
+
+    try:
+        return get_pdf(html, options=_opts)
+
+    except Exception as e:
+        if "broken image" not in str(e).lower():
+            raise
+
+        # ── Fallback: strip every external resource and call pdfkit directly ──
+        clean = re.sub(r'<img[^>]*/?>', '', html, flags=re.IGNORECASE)
+        # Remove external url() references in CSS (keep data: and relative paths)
+        clean = re.sub(
+            r'url\(["\']?https?://[^"\')\s]+["\']?\)',
+            'none',
+            clean,
+            flags=re.IGNORECASE,
+        )
+
+        try:
+            import pdfkit
+            pdf_bytes = pdfkit.from_string(clean, False, options=_opts)
+            if not pdf_bytes:
+                frappe.throw("PDF generation returned empty output after image stripping.")
+            return pdf_bytes
+        except ImportError:
+            # pdfkit not importable — re-raise original error
+            raise e
 
 
 def _localize_html(html):
