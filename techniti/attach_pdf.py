@@ -43,7 +43,7 @@ wkhtmltopdf fetches assets from the local Gunicorn process instead.
 """
 import re
 import secrets
-from urllib.parse import urlparse
+from urllib.parse import urlparse, quote, urlunparse
 
 import frappe
 from frappe.utils import get_url
@@ -136,7 +136,8 @@ def generate_and_attach_pdf(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIEL
             is_private=0,   # public — required for WhatsApp / external access
         )
 
-        full_url = get_url(_file.file_url)
+        parsed = urlparse(get_url(_file.file_url))
+        full_url = urlunparse(parsed._replace(path=quote(parsed.path, safe='/')))
         frappe.db.set_value(doctype, docname, pdf_url_field, full_url, update_modified=False)
         frappe.db.commit()
 
