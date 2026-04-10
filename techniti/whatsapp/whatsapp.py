@@ -1161,64 +1161,41 @@ def _doctype_has_pdf_config(doctype):
     return False
 
 
-# Initial delay before first WhatsApp send (seconds) — lets the file server
-# finish flushing the PDF so WhatsApp's media-fetch succeeds.
-_WHATSAPP_INITIAL_DELAY = 2 * 60   # 2 minutes
-
 # Retry delays in seconds: attempt 2 → wait 5 min, attempt 3 → wait 2 more min
 _WHATSAPP_RETRY_DELAYS = {2: 5 * 60, 3: 2 * 60}
 _WHATSAPP_MAX_ATTEMPTS = 3
 
 
-def _enqueue_whatsapp_delayed(doctype, docname, trigger_event, attempt, delay_seconds):
-    """Enqueue a WhatsApp BG job with a fixed delay using RQ's enqueue_in.
-
-    Requires FrappeWorker (bench worker-pool) which auto-starts the RQ
-    scheduler thread. Plain 'bench worker' does not run the scheduler.
-    """
-    from datetime import timedelta
-    from frappe.utils.background_jobs import execute_job, get_queue
-
-    queue_args = {
-        "site": frappe.local.site,
-        "user": "Administrator",
-        "method": "techniti.whatsapp.whatsapp._run_whatsapp_notification_bg",
-        "event": None,
-        "job_name": f"whatsapp_{doctype}_{docname}_{trigger_event}_a{attempt}",
-        "is_async": True,
-        "kwargs": {
-            "doctype": doctype,
-            "docname": docname,
-            "trigger_event": trigger_event,
-            "attempt": attempt,
-        },
-    }
-    q = get_queue("short", is_async=True)
-    q.enqueue_in(
-        timedelta(seconds=delay_seconds),
-        execute_job,
-        kwargs=queue_args,
-        timeout=120,
-    )
-    frappe.logger("whatsapp").info(
-        f"WhatsApp job scheduled in {delay_seconds}s | attempt={attempt} | {doctype} {docname}"
-    )
-
-
 def _schedule_whatsapp_retry(doctype, docname, trigger_event, attempt):
-    """Schedule a delayed WhatsApp retry after a failed send."""
+    """Enqueue a delayed WhatsApp retry (sleep inside worker, long queue)."""
     delay = _WHATSAPP_RETRY_DELAYS.get(attempt, 300)
-    _enqueue_whatsapp_delayed(doctype, docname, trigger_event, attempt, delay)
+    frappe.enqueue(
+        "techniti.whatsapp.whatsapp._run_whatsapp_notification_bg",
+        queue="long",
+        timeout=delay + 180,
+        doctype=doctype,
+        docname=docname,
+        trigger_event=trigger_event,
+        attempt=attempt,
+        sleep_seconds=delay,
+    )
 
 
-def _run_whatsapp_notification_bg(doctype, docname, trigger_event, attempt=1):
+def _run_whatsapp_notification_bg(doctype, docname, trigger_event, attempt=1, sleep_seconds=0):
     """RQ worker: reloads the document from DB and runs WhatsApp notification logic.
+
+    sleep_seconds: optional initial sleep so attached files (PDFs) are fully
+    accessible before WhatsApp fetches them. Uses plain sleep inside the job
+    so no RQ Scheduler process is required.
 
     On any send failure, automatically schedules a retry:
       - Attempt 2: 5 minutes later
       - Attempt 3: 2 minutes after that
     """
     import time
+    if sleep_seconds > 0:
+        time.sleep(sleep_seconds)
+
     try:
         # Wait up to 6s for the doc to appear — the BG job can start before
         # the main transaction commits (after_insert / on_update).
@@ -1245,19 +1222,33 @@ def _run_whatsapp_notification_bg(doctype, docname, trigger_event, attempt=1):
 
 
 def _enqueue_whatsapp_notification(doc, trigger_event):
-    # Gate before enqueueing — excluded doctypes have ephemeral records that
-    # may not exist by the time the RQ worker runs (e.g. Version, Activity Log).
+    # Excluded doctypes: ephemeral records that may not exist by the time the
+    # RQ worker runs, or internal Frappe doctypes that should never notify.
     if doc.doctype in _EXCLUDED_DOCTYPES:
         return
-    # For Submit events on doctypes with PDF config, WhatsApp is chained from
-    # the PDF background job (after PDF URL is committed + 2 min delay). Skip
-    # here to avoid firing before custom_pdf_url is populated.
-    if trigger_event == "Submit" and _doctype_has_pdf_config(doc.doctype):
+
+    # PDF-configured doctypes: WhatsApp is exclusively chained from the PDF
+    # background job. Block ALL events here — on_submit, after_save, on_update
+    # all fire during a submit and would create redundant jobs.
+    if _doctype_has_pdf_config(doc.doctype):
         return
-    # Delay all WhatsApp sends by 2 minutes so any attached files are fully
-    # accessible before WhatsApp's media-fetch runs.
-    _enqueue_whatsapp_delayed(doc.doctype, doc.name, trigger_event, attempt=1,
-                               delay_seconds=_WHATSAPP_INITIAL_DELAY)
+
+    # Only enqueue if there is actually an active WhatsApp Notification
+    # configured for this doctype + event. This prevents flooding the queue
+    # with jobs for every Frappe internal doctype (Prompt Template, Version,
+    # Communication, etc.) that has no notifications configured.
+    if not get_active_notifications(document_type=doc.doctype, event=trigger_event):
+        return
+
+    frappe.enqueue(
+        "techniti.whatsapp.whatsapp._run_whatsapp_notification_bg",
+        queue="short",
+        timeout=120,
+        doctype=doc.doctype,
+        docname=doc.name,
+        trigger_event=trigger_event,
+        attempt=1,
+    )
 
 
 def handle_whatsapp_notification_submit(doc, method):

@@ -83,6 +83,7 @@
    "label": "I confirm that the details provided are correct and I will complete the payment once contacted by the team"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "custom_pdf_url",
    "fieldtype": "Data",
    "label": "PDF URL"
@@ -102,7 +103,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-09 00:16:16.335246",
+ "modified": "2026-04-10 20:21:48.701767",
  "modified_by": "Administrator",
  "module": "Techniti",
  "name": "Ticket",

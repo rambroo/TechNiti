@@ -190,12 +190,18 @@ def _generate_pdf_bg(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIELD, prin
     """
     generate_and_attach_pdf(doctype, docname, pdf_url_field=pdf_url_field, print_format=print_format, no_letterhead=no_letterhead)
 
-    # Chain WhatsApp 2 minutes after the PDF is committed so the file server
-    # has fully flushed the PDF before WhatsApp tries to fetch it.
-    # The WhatsApp on_submit handler skips PDF-configured doctypes to avoid
-    # a double-send race.
-    from techniti.whatsapp.whatsapp import _enqueue_whatsapp_delayed, _WHATSAPP_INITIAL_DELAY
-    _enqueue_whatsapp_delayed(doctype, docname, "Submit", attempt=1, delay_seconds=_WHATSAPP_INITIAL_DELAY)
+    # Chain WhatsApp now — PDF is committed to DB and the file is written to
+    # disk. All wildcard WhatsApp handlers skip PDF-configured doctypes, so
+    # this is the single point where WhatsApp fires for these doctypes.
+    frappe.enqueue(
+        "techniti.whatsapp.whatsapp._run_whatsapp_notification_bg",
+        queue="short",
+        timeout=120,
+        doctype=doctype,
+        docname=docname,
+        trigger_event="Submit",
+        attempt=1,
+    )
 
 
 # ---------------------------------------------------------------------------
