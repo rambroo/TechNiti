@@ -141,6 +141,14 @@ doctype_js = {
 # Hook on document methods and events
 
 
+attach_pdf_config = {
+	"Ticket": {
+		"pdf_url_field": "custom_pdf_url",
+		# enqueue defaults to True (async). WhatsApp is triggered by the PDF job
+		# after the PDF is written to DB, so there is no race condition.
+	},
+}
+
 doc_events = {
 	"Ticket": {
 		"on_submit": "techniti.attach_pdf.on_submit_attach_pdf",
@@ -164,7 +172,6 @@ doc_events = {
 		"on_update":    "techniti.whatsapp.whatsapp.handle_whatsapp_notification_update"
 	}
 }
-
 # Scheduled Tasks
 # ---------------
 

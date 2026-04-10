@@ -182,8 +182,20 @@ def regenerate_pdf(doctype, docname, pdf_url_field=None, print_format=None):
 # ---------------------------------------------------------------------------
 
 def _generate_pdf_bg(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIELD, print_format=None, no_letterhead=0):
-    """Entry point called by the RQ worker process."""
+    """Entry point called by the RQ worker process.
+
+    After the PDF is saved to DB, enqueues the WhatsApp Submit notification so
+    it always runs *after* the PDF URL is committed — eliminating the race
+    condition where WhatsApp fires before custom_pdf_url is populated.
+    """
     generate_and_attach_pdf(doctype, docname, pdf_url_field=pdf_url_field, print_format=print_format, no_letterhead=no_letterhead)
+
+    # Chain WhatsApp 2 minutes after the PDF is committed so the file server
+    # has fully flushed the PDF before WhatsApp tries to fetch it.
+    # The WhatsApp on_submit handler skips PDF-configured doctypes to avoid
+    # a double-send race.
+    from techniti.whatsapp.whatsapp import _enqueue_whatsapp_delayed, _WHATSAPP_INITIAL_DELAY
+    _enqueue_whatsapp_delayed(doctype, docname, "Submit", attempt=1, delay_seconds=_WHATSAPP_INITIAL_DELAY)
 
 
 # ---------------------------------------------------------------------------

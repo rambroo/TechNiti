@@ -1097,7 +1097,10 @@ def _dispatch_message(handler, recipient, doc, notification,
 
 def _process_whatsapp_notification(doc, notification, handler,
                                    target_date=None, target_time=None):
-    """Process one notification: gather recipients and dispatch messages"""
+    """Process one notification: gather recipients and dispatch messages.
+
+    Returns True if any send failed (caller uses this to decide on retry).
+    """
     recipients = process_notification_recipients(doc, notification)
 
     if not recipients:
@@ -1105,7 +1108,7 @@ def _process_whatsapp_notification(doc, notification, handler,
             title=f"WhatsApp No Recipients - {doc.doctype}",
             message=f"Notification: {notification.name} | Document: {doc.name}"
         )
-        return
+        return False
 
     _logger = frappe.logger("whatsapp")
     success_count = error_count = 0
@@ -1131,6 +1134,7 @@ def _process_whatsapp_notification(doc, notification, handler,
         f"WhatsApp summary | {notification.name} | {doc.doctype} {doc.name} "
         f"| sent:{success_count} failed:{error_count}"
     )
+    return error_count > 0
 
 
 # ============================================================================
@@ -1149,13 +1153,75 @@ _EXCLUDED_DOCTYPES = frozenset([
 ])
 
 
-def _run_whatsapp_notification_bg(doctype, docname, trigger_event):
-    """RQ worker: reloads the document from DB and runs WhatsApp notification logic."""
+def _doctype_has_pdf_config(doctype):
+    """Return True if doctype is in attach_pdf_config (WhatsApp is chained from the PDF job)."""
+    for hook_dict in (frappe.get_hooks("attach_pdf_config") or []):
+        if isinstance(hook_dict, dict) and doctype in hook_dict:
+            return True
+    return False
+
+
+# Initial delay before first WhatsApp send (seconds) — lets the file server
+# finish flushing the PDF so WhatsApp's media-fetch succeeds.
+_WHATSAPP_INITIAL_DELAY = 2 * 60   # 2 minutes
+
+# Retry delays in seconds: attempt 2 → wait 5 min, attempt 3 → wait 2 more min
+_WHATSAPP_RETRY_DELAYS = {2: 5 * 60, 3: 2 * 60}
+_WHATSAPP_MAX_ATTEMPTS = 3
+
+
+def _enqueue_whatsapp_delayed(doctype, docname, trigger_event, attempt, delay_seconds):
+    """Enqueue a WhatsApp BG job with a fixed delay using RQ's enqueue_in.
+
+    Requires FrappeWorker (bench worker-pool) which auto-starts the RQ
+    scheduler thread. Plain 'bench worker' does not run the scheduler.
+    """
+    from datetime import timedelta
+    from frappe.utils.background_jobs import execute_job, get_queue
+
+    queue_args = {
+        "site": frappe.local.site,
+        "user": "Administrator",
+        "method": "techniti.whatsapp.whatsapp._run_whatsapp_notification_bg",
+        "event": None,
+        "job_name": f"whatsapp_{doctype}_{docname}_{trigger_event}_a{attempt}",
+        "is_async": True,
+        "kwargs": {
+            "doctype": doctype,
+            "docname": docname,
+            "trigger_event": trigger_event,
+            "attempt": attempt,
+        },
+    }
+    q = get_queue("short", is_async=True)
+    q.enqueue_in(
+        timedelta(seconds=delay_seconds),
+        execute_job,
+        kwargs=queue_args,
+        timeout=120,
+    )
+    frappe.logger("whatsapp").info(
+        f"WhatsApp job scheduled in {delay_seconds}s | attempt={attempt} | {doctype} {docname}"
+    )
+
+
+def _schedule_whatsapp_retry(doctype, docname, trigger_event, attempt):
+    """Schedule a delayed WhatsApp retry after a failed send."""
+    delay = _WHATSAPP_RETRY_DELAYS.get(attempt, 300)
+    _enqueue_whatsapp_delayed(doctype, docname, trigger_event, attempt, delay)
+
+
+def _run_whatsapp_notification_bg(doctype, docname, trigger_event, attempt=1):
+    """RQ worker: reloads the document from DB and runs WhatsApp notification logic.
+
+    On any send failure, automatically schedules a retry:
+      - Attempt 2: 5 minutes later
+      - Attempt 3: 2 minutes after that
+    """
     import time
     try:
-        # Retry up to 3x with a short delay — the BG job can start before the
-        # main transaction commits (after_insert / on_update), so the doc may
-        # not exist yet. This fixes "X not found" errors across all doctypes.
+        # Wait up to 6s for the doc to appear — the BG job can start before
+        # the main transaction commits (after_insert / on_update).
         doc = None
         for _ in range(3):
             if frappe.db.exists(doctype, docname):
@@ -1166,11 +1232,15 @@ def _run_whatsapp_notification_bg(doctype, docname, trigger_event):
         if doc is None:
             return  # genuinely deleted or never committed — skip silently
 
-        _handle_whatsapp_notification(doc, None, trigger_event)
+        had_failures = _handle_whatsapp_notification(doc, None, trigger_event)
+
+        if had_failures and attempt < _WHATSAPP_MAX_ATTEMPTS:
+            _schedule_whatsapp_retry(doctype, docname, trigger_event, attempt + 1)
+
     except Exception as e:
         frappe.log_error(
             title=f"WhatsApp BG Worker Error - {doctype}",
-            message=f"DocType: {doctype} | Name: {docname} | Event: {trigger_event}\n{str(e)}"
+            message=f"DocType: {doctype} | Name: {docname} | Event: {trigger_event} | Attempt: {attempt}\n{str(e)}"
         )
 
 
@@ -1179,14 +1249,15 @@ def _enqueue_whatsapp_notification(doc, trigger_event):
     # may not exist by the time the RQ worker runs (e.g. Version, Activity Log).
     if doc.doctype in _EXCLUDED_DOCTYPES:
         return
-    frappe.enqueue(
-        "techniti.whatsapp.whatsapp._run_whatsapp_notification_bg",
-        queue="short",
-        timeout=120,
-        doctype=doc.doctype,
-        docname=doc.name,
-        trigger_event=trigger_event,
-    )
+    # For Submit events on doctypes with PDF config, WhatsApp is chained from
+    # the PDF background job (after PDF URL is committed + 2 min delay). Skip
+    # here to avoid firing before custom_pdf_url is populated.
+    if trigger_event == "Submit" and _doctype_has_pdf_config(doc.doctype):
+        return
+    # Delay all WhatsApp sends by 2 minutes so any attached files are fully
+    # accessible before WhatsApp's media-fetch runs.
+    _enqueue_whatsapp_delayed(doc.doctype, doc.name, trigger_event, attempt=1,
+                               delay_seconds=_WHATSAPP_INITIAL_DELAY)
 
 
 def handle_whatsapp_notification_submit(doc, method):
@@ -1212,21 +1283,25 @@ def handle_whatsapp_notification_update(doc, method):
 
 
 def _handle_whatsapp_notification(doc, method, trigger_event):
-    """Unified handler for immediate document events"""
+    """Unified handler for immediate document events.
+
+    Returns True if any send failed (so the caller can schedule a retry).
+    """
+    had_failures = False
     try:
         if doc.doctype in _EXCLUDED_DOCTYPES:
-            return
+            return False
 
         settings = safe_get_settings()
         if not settings or not settings.enabled:
-            return
+            return False
 
         notifications = get_active_notifications(
             document_type=doc.doctype,
             event=trigger_event
         )
         if not notifications:
-            return
+            return False
 
         handler = SparklebotHandler()
 
@@ -1239,19 +1314,24 @@ def _handle_whatsapp_notification(doc, method, trigger_event):
                     if not evaluate_custom_condition(doc, notification.condition):
                         continue
 
-                _process_whatsapp_notification(doc, notification, handler)
+                if _process_whatsapp_notification(doc, notification, handler):
+                    had_failures = True
 
             except Exception as e:
+                had_failures = True
                 frappe.log_error(
                     title=f"WhatsApp Notification Error - {doc.doctype}",
                     message=f"Notification: {notification_data.name}\n{str(e)}"
                 )
 
     except Exception as e:
+        had_failures = True
         frappe.log_error(
             title="WhatsApp Handler Failed",
             message=f"DocType: {doc.doctype} | Name: {doc.name}\n{str(e)}"
         )
+
+    return had_failures
 
 
 # ============================================================================
