@@ -188,11 +188,18 @@ def _generate_pdf_bg(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIELD, prin
     it always runs *after* the PDF URL is committed — eliminating the race
     condition where WhatsApp fires before custom_pdf_url is populated.
     """
-    generate_and_attach_pdf(doctype, docname, pdf_url_field=pdf_url_field, print_format=print_format, no_letterhead=no_letterhead)
+    url = generate_and_attach_pdf(doctype, docname, pdf_url_field=pdf_url_field, print_format=print_format, no_letterhead=no_letterhead)
 
-    # Chain WhatsApp now — PDF is committed to DB and the file is written to
-    # disk. All wildcard WhatsApp handlers skip PDF-configured doctypes, so
-    # this is the single point where WhatsApp fires for these doctypes.
+    if not url:
+        frappe.log_error(
+            title=f"PDF Attach Failed — WhatsApp Skipped ({doctype})",
+            message=f"generate_and_attach_pdf returned no URL for {docname}. WhatsApp not queued.",
+        )
+        return
+
+    # Chain WhatsApp only after PDF is successfully committed to DB.
+    # All wildcard WhatsApp handlers skip PDF-configured doctypes, so this
+    # is the single point where WhatsApp fires for these doctypes.
     frappe.enqueue(
         "techniti.whatsapp.whatsapp._run_whatsapp_notification_bg",
         queue="short",

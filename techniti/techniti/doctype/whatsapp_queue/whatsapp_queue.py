@@ -17,6 +17,13 @@ class WhatsAppQueue(Document):
         """
         from techniti.whatsapp.whatsapp import SparklebotHandler
 
+        # Always refresh the header URL from the source document before sending.
+        # This handles the case where the queue entry was created before the PDF
+        # was ready — retries will automatically pick up the URL once available.
+        header_url = self.header_document_url or self._get_fresh_header_url()
+        if header_url and header_url != self.header_document_url:
+            self.db_set("header_document_url", header_url)
+
         self.db_set("status", "Sending", commit=True)
         try:
             handler = SparklebotHandler()
@@ -33,7 +40,7 @@ class WhatsAppQueue(Document):
                     params,
                     self.reference_doctype,
                     self.reference_name,
-                    header_document_url=self.header_document_url or None,
+                    header_document_url=header_url or None,
                 )
             else:
                 success = handler.send_text(
@@ -53,6 +60,26 @@ class WhatsAppQueue(Document):
         except Exception as e:
             self._handle_failure(str(e))
             return False
+
+    def _get_fresh_header_url(self):
+        """
+        Look up the current value of the template's header_document_field on the
+        source document. Used to recover when the queue entry was created before
+        the PDF was committed (e.g. race between PDF job and WhatsApp job).
+        """
+        try:
+            if not self.notification or not self.reference_doctype or not self.reference_name:
+                return None
+            notification = frappe.get_doc("WhatsApp Notification", self.notification)
+            if not notification.message:
+                return None
+            template = frappe.get_doc("WhatsApp Message Template", notification.message)
+            if not template.header_document_field:
+                return None
+            doc = frappe.get_doc(self.reference_doctype, self.reference_name)
+            return doc.get(template.header_document_field) or None
+        except Exception:
+            return None
 
     def _handle_failure(self, error_msg):
         """Increment retry counter. Reschedule if under limit, else mark Error."""
