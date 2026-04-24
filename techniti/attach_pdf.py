@@ -200,7 +200,6 @@ def _generate_pdf_bg(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIELD, prin
         doctype=doctype,
         docname=docname,
         trigger_event="Submit",
-        attempt=1,
     )
 
 

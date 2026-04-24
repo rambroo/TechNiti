@@ -1052,11 +1052,14 @@ def evaluate_custom_condition(doc, condition_code):
 # ============================================================================
 
 def _dispatch_message(handler, recipient, doc, notification,
-                      target_date=None, target_time=None):
+                      target_date=None, target_time=None, trigger_event=None):
     """
-    Send one message to one recipient.
-    Determines text vs template mode from the notification's message template.
+    Create a WhatsApp Queue entry for one recipient.
+    Actual sending is handled by the queue processor scheduler.
+    Returns True always (queue creation = success; failures log themselves).
     """
+    import json as _json
+
     phone = recipient['phone']
 
     template_doc = None
@@ -1075,15 +1078,19 @@ def _dispatch_message(handler, recipient, doc, notification,
         header_url = None
         if template_doc.header_document_field:
             header_url = doc.get(template_doc.header_document_field) or None
-        return handler.send_template(
-            phone,
-            template_doc.wa_template_name,
-            template_doc.template_language or "en",
-            field_params,
-            doc.doctype,
-            doc.name,
-            header_document_url=header_url
+        _create_queue_entry(
+            phone=phone,
+            message_type="template",
+            template_name=template_doc.wa_template_name,
+            template_language=template_doc.template_language or "en",
+            field_params=_json.dumps(field_params),
+            header_document_url=header_url,
+            reference_doctype=doc.doctype,
+            reference_name=doc.name,
+            notification=notification.name,
+            trigger_event=trigger_event or notification.event,
         )
+        return True
 
     # Text mode (default)
     message = MessageTemplateHandler.build_message(
@@ -1092,14 +1099,70 @@ def _dispatch_message(handler, recipient, doc, notification,
         target_date=target_date,
         target_time=target_time
     )
-    return handler.send_text(phone, message, doc.doctype, doc.name)
+    _create_queue_entry(
+        phone=phone,
+        message_type="text",
+        message=message,
+        reference_doctype=doc.doctype,
+        reference_name=doc.name,
+        notification=notification.name,
+        trigger_event=trigger_event or notification.event,
+    )
+    return True
+
+
+def _create_queue_entry(phone, message_type, reference_doctype, reference_name,
+                        notification, trigger_event,
+                        template_name=None, template_language="en",
+                        field_params=None, header_document_url=None, message=None):
+    """
+    Insert a WhatsApp Queue record.
+    Deduplicates: skips if an identical (notification, doc, phone, trigger_event)
+    entry already exists with status Not Sent, Sending, or Sent within the last
+    10 minutes — prevents double-sends when multiple doc events fire on submit.
+    """
+    ten_min_ago = frappe.utils.add_to_date(frappe.utils.now_datetime(), minutes=-10)
+    duplicate = frappe.db.exists(
+        "WhatsApp Queue",
+        {
+            "reference_doctype": reference_doctype,
+            "reference_name": reference_name,
+            "notification": notification,
+            "phone": phone,
+            "trigger_event": trigger_event,
+            "status": ["in", ["Not Sent", "Sending", "Sent"]],
+            "creation": [">", ten_min_ago],
+        },
+    )
+    if duplicate:
+        return
+
+    frappe.get_doc({
+        "doctype": "WhatsApp Queue",
+        "status": "Not Sent",
+        "phone": phone,
+        "message_type": message_type,
+        "template_name": template_name,
+        "template_language": template_language,
+        "field_params": field_params,
+        "header_document_url": header_document_url,
+        "message": message,
+        "reference_doctype": reference_doctype,
+        "reference_name": reference_name,
+        "notification": notification,
+        "trigger_event": trigger_event,
+        "priority": 1,
+        "retry": 0,
+    }).insert(ignore_permissions=True)
+    frappe.db.commit()
 
 
 def _process_whatsapp_notification(doc, notification, handler,
-                                   target_date=None, target_time=None):
-    """Process one notification: gather recipients and dispatch messages.
-
-    Returns True if any send failed (caller uses this to decide on retry).
+                                   target_date=None, target_time=None,
+                                   trigger_event=None):
+    """
+    Gather recipients and create WhatsApp Queue entries for each.
+    Returns False always — queue creation failures log themselves.
     """
     recipients = process_notification_recipients(doc, notification)
 
@@ -1110,31 +1173,22 @@ def _process_whatsapp_notification(doc, notification, handler,
         )
         return False
 
-    _logger = frappe.logger("whatsapp")
-    success_count = error_count = 0
-
     for recipient in recipients:
         try:
-            if _dispatch_message(handler, recipient, doc, notification,
-                                  target_date, target_time):
-                success_count += 1
-                _logger.info(
-                    f"WhatsApp sent | {doc.doctype} {doc.name} | {recipient['phone']}"
-                )
-            else:
-                error_count += 1
-        except Exception as send_error:
-            error_count += 1
+            _dispatch_message(handler, recipient, doc, notification,
+                               target_date, target_time,
+                               trigger_event=trigger_event)
+        except Exception as e:
             frappe.log_error(
-                title=f"WhatsApp Send Error - {doc.doctype}",
-                message=f"Notification: {notification.name}\nRecipient: {recipient['source']}\n{str(send_error)}"
+                title=f"WhatsApp Dispatch Error - {doc.doctype}",
+                message=f"Notification: {notification.name}\nRecipient: {recipient['source']}\n{str(e)}"
             )
 
-    _logger.info(
-        f"WhatsApp summary | {notification.name} | {doc.doctype} {doc.name} "
-        f"| sent:{success_count} failed:{error_count}"
+    frappe.logger("whatsapp").info(
+        f"WhatsApp queued | {notification.name} | {doc.doctype} {doc.name} "
+        f"| {len(recipients)} recipient(s)"
     )
-    return error_count > 0
+    return False
 
 
 # ============================================================================
@@ -1161,44 +1215,15 @@ def _doctype_has_pdf_config(doctype):
     return False
 
 
-# Retry delays in seconds: attempt 2 → wait 5 min, attempt 3 → wait 2 more min
-_WHATSAPP_RETRY_DELAYS = {2: 5 * 60, 3: 2 * 60}
-_WHATSAPP_MAX_ATTEMPTS = 3
-
-
-def _schedule_whatsapp_retry(doctype, docname, trigger_event, attempt):
-    """Enqueue a delayed WhatsApp retry (sleep inside worker, long queue)."""
-    delay = _WHATSAPP_RETRY_DELAYS.get(attempt, 300)
-    frappe.enqueue(
-        "techniti.whatsapp.whatsapp._run_whatsapp_notification_bg",
-        queue="long",
-        timeout=delay + 180,
-        doctype=doctype,
-        docname=docname,
-        trigger_event=trigger_event,
-        attempt=attempt,
-        sleep_seconds=delay,
-    )
-
-
-def _run_whatsapp_notification_bg(doctype, docname, trigger_event, attempt=1, sleep_seconds=0):
-    """RQ worker: reloads the document from DB and runs WhatsApp notification logic.
-
-    sleep_seconds: optional initial sleep so attached files (PDFs) are fully
-    accessible before WhatsApp fetches them. Uses plain sleep inside the job
-    so no RQ Scheduler process is required.
-
-    On any send failure, automatically schedules a retry:
-      - Attempt 2: 5 minutes later
-      - Attempt 3: 2 minutes after that
+def _run_whatsapp_notification_bg(doctype, docname, trigger_event):
+    """
+    RQ worker: reloads the document from DB and creates WhatsApp Queue entries.
+    Actual sending and retries are handled by the queue processor scheduler.
     """
     import time
-    if sleep_seconds > 0:
-        time.sleep(sleep_seconds)
-
     try:
-        # Wait up to 6s for the doc to appear — the BG job can start before
-        # the main transaction commits (after_insert / on_update).
+        # Wait up to 6s for the doc to exist — BG job can start before the
+        # submit transaction commits (after_insert / on_update timing).
         doc = None
         for _ in range(3):
             if frappe.db.exists(doctype, docname):
@@ -1207,17 +1232,14 @@ def _run_whatsapp_notification_bg(doctype, docname, trigger_event, attempt=1, sl
             time.sleep(2)
 
         if doc is None:
-            return  # genuinely deleted or never committed — skip silently
+            return  # doc never committed or was deleted — skip silently
 
-        had_failures = _handle_whatsapp_notification(doc, None, trigger_event)
-
-        if had_failures and attempt < _WHATSAPP_MAX_ATTEMPTS:
-            _schedule_whatsapp_retry(doctype, docname, trigger_event, attempt + 1)
+        _handle_whatsapp_notification(doc, None, trigger_event)
 
     except Exception as e:
         frappe.log_error(
             title=f"WhatsApp BG Worker Error - {doctype}",
-            message=f"DocType: {doctype} | Name: {docname} | Event: {trigger_event} | Attempt: {attempt}\n{str(e)}"
+            message=f"DocType: {doctype} | Name: {docname} | Event: {trigger_event}\n{str(e)}"
         )
 
 
@@ -1247,7 +1269,6 @@ def _enqueue_whatsapp_notification(doc, trigger_event):
         doctype=doc.doctype,
         docname=doc.name,
         trigger_event=trigger_event,
-        attempt=1,
     )
 
 
@@ -1274,25 +1295,21 @@ def handle_whatsapp_notification_update(doc, method):
 
 
 def _handle_whatsapp_notification(doc, method, trigger_event):
-    """Unified handler for immediate document events.
-
-    Returns True if any send failed (so the caller can schedule a retry).
-    """
-    had_failures = False
+    """Unified handler: creates WhatsApp Queue entries for each active notification."""
     try:
         if doc.doctype in _EXCLUDED_DOCTYPES:
-            return False
+            return
 
         settings = safe_get_settings()
         if not settings or not settings.enabled:
-            return False
+            return
 
         notifications = get_active_notifications(
             document_type=doc.doctype,
             event=trigger_event
         )
         if not notifications:
-            return False
+            return
 
         handler = SparklebotHandler()
 
@@ -1305,24 +1322,20 @@ def _handle_whatsapp_notification(doc, method, trigger_event):
                     if not evaluate_custom_condition(doc, notification.condition):
                         continue
 
-                if _process_whatsapp_notification(doc, notification, handler):
-                    had_failures = True
+                _process_whatsapp_notification(doc, notification, handler,
+                                               trigger_event=trigger_event)
 
             except Exception as e:
-                had_failures = True
                 frappe.log_error(
                     title=f"WhatsApp Notification Error - {doc.doctype}",
                     message=f"Notification: {notification_data.name}\n{str(e)}"
                 )
 
     except Exception as e:
-        had_failures = True
         frappe.log_error(
             title="WhatsApp Handler Failed",
             message=f"DocType: {doc.doctype} | Name: {doc.name}\n{str(e)}"
         )
-
-    return had_failures
 
 
 # ============================================================================

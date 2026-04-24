@@ -182,6 +182,10 @@ scheduler_events = {
 		"techniti.api.update_website_donor_categories",
 		"techniti.api.update_website_donor_status",
 	],
+	# WhatsApp Queue processor — runs every minute, like Email Queue
+	"all": [
+		"techniti.techniti.doctype.whatsapp_queue.whatsapp_queue.process_whatsapp_queue"
+	],
 	# WhatsApp scheduled reminders
 	"cron": {
 		"00 11 * * *": [
