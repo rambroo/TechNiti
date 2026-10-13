@@ -184,30 +184,24 @@ def regenerate_pdf(doctype, docname, pdf_url_field=None, print_format=None):
 def _generate_pdf_bg(doctype, docname, pdf_url_field=DEFAULT_PDF_URL_FIELD, print_format=None, no_letterhead=0):
     """Entry point called by the RQ worker process.
 
-    After the PDF is saved to DB, enqueues the WhatsApp Submit notification so
-    it always runs *after* the PDF URL is committed — eliminating the race
-    condition where WhatsApp fires before custom_pdf_url is populated.
+    After the PDF is saved to DB, calls every `after_pdf_attach` hook (e.g.
+    techniti_connect sends the WhatsApp receipt) so they always run *after* the
+    PDF URL is committed — no race where WhatsApp fires before custom_pdf_url exists.
     """
     url = generate_and_attach_pdf(doctype, docname, pdf_url_field=pdf_url_field, print_format=print_format, no_letterhead=no_letterhead)
 
     if not url:
         frappe.log_error(
-            title=f"PDF Attach Failed — WhatsApp Skipped ({doctype})",
-            message=f"generate_and_attach_pdf returned no URL for {docname}. WhatsApp not queued.",
+            title=f"PDF Attach Failed — follow-ups skipped ({doctype})",
+            message=f"generate_and_attach_pdf returned no URL for {docname}. after_pdf_attach hooks not called.",
         )
         return
 
-    # Chain WhatsApp only after PDF is successfully committed to DB.
-    # All wildcard WhatsApp handlers skip PDF-configured doctypes, so this
-    # is the single point where WhatsApp fires for these doctypes.
-    frappe.enqueue(
-        "techniti.whatsapp.whatsapp._run_whatsapp_notification_bg",
-        queue="short",
-        timeout=120,
-        doctype=doctype,
-        docname=docname,
-        trigger_event="Submit",
-    )
+    for method in frappe.get_hooks("after_pdf_attach") or []:
+        try:
+            frappe.get_attr(method)(doctype, docname)
+        except Exception:
+            frappe.log_error(title=f"after_pdf_attach hook failed: {method}", message=frappe.get_traceback())
 
 
 # ---------------------------------------------------------------------------
