@@ -1219,11 +1219,26 @@ def verify_donor_otp(identifier, otp):
 		return {"success": False, "message": "Login failed. Please contact support."}
 
 
+def _whatsapp_enabled():
+	"""WhatsApp lives in the techniti_connect app; OTP over WhatsApp works only when it is installed."""
+	if "techniti_connect" not in frappe.get_installed_apps():
+		return False
+	from techniti_connect.whatsapp.client import SparklebotClient
+
+	return SparklebotClient().is_enabled()
+
+
+def _send_whatsapp_otp(phone, otp, donor_name):
+	from techniti_connect.whatsapp import outbox
+
+	outbox.send(phone, "template", template_name="login", language="en", fields={"field_1": otp},
+				reference=("Website Donor", donor_name), redact=True)
+
+
 @frappe.whitelist(allow_guest=True)
 def request_donor_whatsapp_otp(mobile):
 	"""Send a 6-digit OTP via WhatsApp using the 'login' template (expires in 10 minutes)."""
 	import random
-	from techniti.whatsapp.whatsapp import SparklebotHandler
 
 	digits = "".join(filter(str.isdigit, mobile or ""))
 	if len(digits) < 7:
@@ -1240,22 +1255,14 @@ def request_donor_whatsapp_otp(mobile):
 	if not donors:
 		return {"success": False, "message": "No donor account found with this mobile number"}
 
-	handler = SparklebotHandler()
-	if not handler.is_enabled():
+	if not _whatsapp_enabled():
 		return {"success": False, "message": "WhatsApp service is not enabled"}
 
 	otp = str(random.randint(100000, 999999))
 	cache_key = f"donor_otp_wa_{digits}"
 	frappe.cache().set_value(cache_key, {"otp": otp, "donor": donors[0].name}, expires_in_sec=600)
 
-	handler.send_template(
-		phone=digits,
-		template_name="login",
-		language="en",
-		field_params={"field_1": otp},
-		doctype="Website Donor",
-		docname=donors[0].name,
-	)
+	_send_whatsapp_otp(digits, otp, donors[0].name)
 
 	masked = digits[:2] + "X" * (len(digits) - 4) + digits[-2:]
 	return {"success": True, "message": f"OTP sent to WhatsApp number ending {digits[-4:]}", "masked": masked}
@@ -1360,19 +1367,10 @@ def register_donor(full_name, email=None, mobile=None, reg_channel="email", id_t
 	otp = str(random.randint(100000, 999999))
 
 	if reg_channel == "whatsapp":
-		from techniti.whatsapp.whatsapp import SparklebotHandler
 		cache_key = f"donor_otp_wa_{digits}"
 		frappe.cache().set_value(cache_key, {"otp": otp, "donor": donor.name}, expires_in_sec=600)
-		handler = SparklebotHandler()
-		if handler.is_enabled():
-			handler.send_template(
-				phone=digits,
-				template_name="login",
-				language="en",
-				field_params={"field_1": otp},
-				doctype="Website Donor",
-				docname=donor.name,
-			)
+		if _whatsapp_enabled():
+			_send_whatsapp_otp(digits, otp, donor.name)
 		masked = digits[:2] + "X" * (len(digits) - 4) + digits[-2:]
 		return {"success": True, "channel": "whatsapp", "identifier": digits, "masked": masked,
 				"message": "Account created! Please verify with the OTP sent to your WhatsApp."}

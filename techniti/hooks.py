@@ -144,8 +144,8 @@ doctype_js = {
 attach_pdf_config = {
 	"Ticket": {
 		"pdf_url_field": "custom_pdf_url",
-		# enqueue defaults to True (async). WhatsApp is triggered by the PDF job
-		# after the PDF is written to DB, so there is no race condition.
+		# enqueue defaults to True (async). Apps listening on `after_pdf_attach`
+		# (techniti_connect sends WhatsApp) run after the PDF URL is saved.
 	},
 }
 
@@ -163,14 +163,7 @@ doc_events = {
 	"Website Donation Subscription": {
 		"after_save": "techniti.api.update_website_expired_subscriptions"
 	},
-	# WhatsApp notification handlers — fires for every doctype
-	"*": {
-		"on_submit":    "techniti.whatsapp.whatsapp.handle_whatsapp_notification_submit",
-		"after_save":   "techniti.whatsapp.whatsapp.handle_whatsapp_notification_save",
-		"on_cancel":    "techniti.whatsapp.whatsapp.handle_whatsapp_notification_cancel",
-		"after_insert": "techniti.whatsapp.whatsapp.handle_whatsapp_notification_creation",
-		"on_update":    "techniti.whatsapp.whatsapp.handle_whatsapp_notification_update"
-	}
+	# WhatsApp notifications moved to the techniti_connect app
 }
 # Scheduled Tasks
 # ---------------
@@ -182,19 +175,7 @@ scheduler_events = {
 		"techniti.api.update_website_donor_categories",
 		"techniti.api.update_website_donor_status",
 	],
-	# WhatsApp Queue processor — runs every minute, like Email Queue
-	"all": [
-		"techniti.techniti.doctype.whatsapp_queue.whatsapp_queue.process_whatsapp_queue"
-	],
-	# WhatsApp scheduled reminders
-	"cron": {
-		"00 11 * * *": [
-			"techniti.whatsapp.whatsapp.send_scheduled_whatsapp_reminders_enhanced"
-		]
-	},
-	"hourly": [
-		"techniti.whatsapp.whatsapp.process_scheduled_whatsapp_time_reminders"
-	]
+	# WhatsApp queue and reminders moved to the techniti_connect app
 }
 
 # Testing
